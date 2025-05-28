@@ -167,7 +167,7 @@ export const HeroSlider: React.FC = () => {
                 <img
                   src={slide.image}
                   alt={slide.altText}
-                  className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-auto object-cover lg:object-contain"
+                  className="w-full h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-auto object-cover lg:object-contain"
                   data-swiper-parallax="-23%"
                 />
                 
@@ -181,8 +181,8 @@ export const HeroSlider: React.FC = () => {
                 </div>
 
                 {/* Content */}
-                <div className="absolute inset-0 flex flex-col items-start justify-center text-right p-6 pr-12 z-10">
-                  <div className="max-w-3xl mr-auto">
+                <div className="absolute inset-0 flex flex-col items-start justify-center text-right p-4 md:p-6 pr-6 md:pr-12 z-10">
+                  <div className="max-w-2xl md:max-w-3xl mr-auto">
                     {/* Badge */}
                     <div 
                       className={`inline-flex items-center px-4 py-2 bg-blue-600/20 backdrop-blur-sm border border-blue-400/30 rounded-full mb-6 transition-all duration-1000 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
@@ -196,7 +196,7 @@ export const HeroSlider: React.FC = () => {
 
                     {/* Main Title */}
                     <h1
-                      className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight transition-all duration-1000 delay-200 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                      className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 leading-tight transition-all duration-1000 delay-200 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                       data-swiper-parallax="-200"
                     >
                       <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent animate-gradient">
@@ -206,15 +206,15 @@ export const HeroSlider: React.FC = () => {
 
                     {/* Subtitle */}
                     <p
-                      className={`text-lg md:text-xl lg:text-2xl mb-4 text-blue-100 font-medium transition-all duration-1000 delay-400 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                      className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-3 md:mb-4 text-blue-100 font-medium transition-all duration-1000 delay-400 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                       data-swiper-parallax="-300"
                     >
                       {slide.subtitle}
                     </p>
 
                     {/* Description */}
-                    <p 
-                      className={`text-lg md:text-xl mb-8 text-gray-200 max-w-3xl mx-auto leading-relaxed transition-all duration-1000 delay-600 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                    <p
+                      className={`text-sm sm:text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-gray-200 max-w-2xl md:max-w-3xl mx-auto leading-relaxed transition-all duration-1000 delay-600 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                       data-swiper-parallax="-400"
                     >
                       {slide.description}
@@ -235,29 +235,29 @@ export const HeroSlider: React.FC = () => {
 
                     {/* CTA Buttons */}
                     <div
-                      className={`flex flex-col sm:flex-row gap-4 justify-start items-start transition-all duration-1000 delay-900 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                      className={`flex flex-col sm:flex-row gap-3 md:gap-4 justify-start items-start transition-all duration-1000 delay-900 ${realIndex === index && !isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                       data-swiper-parallax="-600"
                     >
-                      <Link 
-                        href="/contact" 
-                        className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-full inline-flex items-center transition-all duration-300 hover:scale-105 hover:shadow-2xl hover-lift animate-pulse-glow"
+                      <Link
+                        href="/contact"
+                        className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-full inline-flex items-center transition-all duration-300 hover:scale-105 hover:shadow-2xl hover-lift animate-pulse-glow text-sm md:text-base"
                         aria-label={slide.cta.primary}
                       >
-                        <Phone className="h-5 w-5 mr-3" />
+                        <Phone className="h-4 w-4 md:h-5 md:w-5 mr-2 md:mr-3" />
                         {slide.cta.primary}
-                        <ArrowRight className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2 group-hover:translate-x-1 transition-transform" />
                       </Link>
                       
-                      <Link 
+                      <Link
                         href={`https://wa.me/${companyInfo.primaryPhone.replace('+', '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group bg-white/10 backdrop-blur-sm border border-white/30 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full inline-flex items-center transition-all duration-300 hover:scale-105"
+                        className="group bg-white/10 backdrop-blur-sm border border-white/30 hover:bg-white/20 text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-full inline-flex items-center transition-all duration-300 hover:scale-105 text-sm md:text-base"
                         aria-label="تواصل عبر واتساب"
                       >
-                        <MessageCircle className="h-5 w-5 mr-3 text-green-400" />
+                        <MessageCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 md:mr-3 text-green-400" />
                         واتساب
-                        <ArrowRight className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </div>
                   </div>
