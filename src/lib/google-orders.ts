@@ -1,36 +1,46 @@
 import { google } from 'googleapis';
+import { JWT } from 'google-auth-library';
 import { Order, OrderItem, CustomerInfo } from '@/types/order';
 
 // إعداد Google Sheets API
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const ORDERS_SPREADSHEET_ID = '17MRkrcJA5Fxxn-cZ5NIUGSxnBYDWaBMlPZVvwrAPX0Y';
+const ORDERS_SPREADSHEET_ID = process.env.ORDERS_SHEET_ID || '17MRkrcJA5Fxxn-cZ5NIUGSxnBYDWaBMlPZVvwrAPX0Y';
 const ORDERS_SHEET_NAME = 'Orders';
+
+// Google credentials from environment variables
+const GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+
+// Log configuration status
+if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL) {
+  console.warn('[GoogleOrders] Missing required environment variables:');
+  console.warn('- GOOGLE_SHEETS_PRIVATE_KEY:', !!GOOGLE_SHEETS_PRIVATE_KEY);
+  console.warn('- GOOGLE_SHEETS_CLIENT_EMAIL:', !!GOOGLE_SHEETS_CLIENT_EMAIL);
+  console.warn('- ORDERS_SHEET_ID:', !!ORDERS_SPREADSHEET_ID);
+} else {
+  console.log('[GoogleOrders] Configuration loaded from environment variables');
+}
 
 // إنشاء عميل المصادقة
 function getAuthClient() {
-  try {
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}');
-    
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: SCOPES,
-    });
-
-    return auth;
-  } catch (error) {
-    console.error('خطأ في إعداد مصادقة Google:', error);
-    throw new Error('فشل في إعداد مصادقة Google Sheets');
+  if (!GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_PRIVATE_KEY) {
+    throw new Error('Google Sheets credentials not configured');
   }
+
+  return new JWT({
+    email: GOOGLE_SHEETS_CLIENT_EMAIL,
+    key: GOOGLE_SHEETS_PRIVATE_KEY,
+    scopes: SCOPES,
+  });
 }
 
 // إنشاء عميل Sheets
 async function getSheetsClient() {
   const auth = getAuthClient();
-  const authClient = await auth.getClient();
   
-  return google.sheets({ 
-    version: 'v4', 
-    auth: authClient as any 
+  return google.sheets({
+    version: 'v4',
+    auth: auth
   });
 }
 

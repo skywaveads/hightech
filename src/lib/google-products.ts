@@ -2,8 +2,6 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 import { Product } from '@/types/product';
-import fs from 'fs';
-import path from 'path';
 
 // Google configuration
 let GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
@@ -15,19 +13,15 @@ let PRODUCTS_SHEET_ID = process.env.PRODUCTS_SHEET_ID || '1RXql2CacN5haqIEq7DM3Z
 // Google Drive configuration
 let GOOGLE_DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || '1q1tt-HIQOE3gthmNq_Kl1SX1FkuEZ1Si';
 
-// Fallback: read from service account file if env vars not available
+// Log configuration status
 if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL) {
-  try {
-    const serviceAccountPath = path.join(process.cwd(), 'google-service-account.json');
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      GOOGLE_SHEETS_PRIVATE_KEY = serviceAccount.private_key;
-      GOOGLE_SHEETS_CLIENT_EMAIL = serviceAccount.client_email;
-      console.log('✅ Loaded Google credentials from service account file');
-    }
-  } catch (error) {
-    console.warn('⚠️ Could not load service account file:', error);
-  }
+  console.warn('[GoogleProducts] Missing required environment variables:');
+  console.warn('- GOOGLE_SHEETS_PRIVATE_KEY:', !!GOOGLE_SHEETS_PRIVATE_KEY);
+  console.warn('- GOOGLE_SHEETS_CLIENT_EMAIL:', !!GOOGLE_SHEETS_CLIENT_EMAIL);
+  console.warn('- PRODUCTS_SHEET_ID:', !!PRODUCTS_SHEET_ID);
+  console.warn('- GOOGLE_DRIVE_FOLDER_ID:', !!GOOGLE_DRIVE_FOLDER_ID);
+} else {
+  console.log('[GoogleProducts] Configuration loaded from environment variables');
 }
 
 // Connection pooling

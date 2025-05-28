@@ -19,8 +19,7 @@ GOOGLE_SHEETS_SHEET_ID="1HfbaI2kPNNLLvEcjZ9Lh6U5CKEfgH6fkoRd8xHwFaZY"
 PRODUCTS_SHEET_ID="1RXql2CacN5haqIEq7DM3ZgSLj8ml_KR8PzRJbjDb-As"
 
 # Sheet ID للطلبات (مهم جداً لنظام الطلبات)
-# تأكد من إنشاء هذا الـ Sheet ووضع الـ ID الخاص به هنا
-ORDERS_SHEET_ID="your-google-sheet-id-for-orders" 
+ORDERS_SHEET_ID="17MRkrcJA5Fxxn-cZ5NIUGSxnBYDWaBMlPZVvwrAPX0Y"
 ```
 
 ### 3. Google Drive (لتخزين صور المنتجات المرفوعة)
