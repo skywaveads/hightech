@@ -31,9 +31,9 @@ GOOGLE_DRIVE_FOLDER_ID="1q1tt-HIQOE3gthmNq_Kl1SX1FkuEZ1Si"
 
 ### 4. إعدادات المدير (Admin)
 ```
-ADMIN_USERNAME="admin"
-ADMIN_PASSWORD="your-secure-password-for-admin" 
-JWT_SECRET="your-strong-jwt-secret-key-for-sessions" 
+ADMIN_USERNAME="admin@hightech.com"
+ADMIN_PASSWORD="StrongP@ss123"
+JWT_SECRET="your-strong-jwt-secret-key-for-sessions"
 ```
 
 ### 5. إعدادات NextAuth (للمصادقة)
