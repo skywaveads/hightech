@@ -1,0 +1,37 @@
+[
+  {
+    "name_ar": "كتر بلوتر روش",
+    "name_en": "Cutter Plotter Rush",
+    "slug": "cutter-plotter-rush",
+    "short_desc": "كتر بلوتر روش 3 مقاسات",
+    "description": "36سم\n50سم\n80سم\nشاشة تاتش\nتقسيط",
+    "price": 5000,
+    "sale_price": null,
+    "quantity": 50,
+    "category": "cutters",
+    "tags": [],
+    "sku": "C-8688",
+    "images": [
+      {
+        "url": "/uploads/81489ea9-281f-4732-a1a6-bba2badf6c76.jpg",
+        "alt": "كتر بلوتر روش"
+      },
+      {
+        "url": "/uploads/f6ee3611-d0b1-4f24-a35b-0673f87e8c1b.jpg",
+        "alt": "كتر بلوتر روش"
+      },
+      {
+        "url": "/uploads/00192c2f-154c-49e0-af71-339613234bd5.jpg",
+        "alt": "كتر بلوتر روش"
+      },
+      {
+        "url": "/uploads/f86567df-7c61-4a39-8fbc-37063b9a8a0a.jpg",
+        "alt": "كتر بلوتر روش"
+      }
+    ],
+    "isActive": true,
+    "_id": "1",
+    "createdAt": "2025-05-23T08:51:52.029Z",
+    "updatedAt": "2025-05-23T08:58:15.828Z"
+  }
+]
