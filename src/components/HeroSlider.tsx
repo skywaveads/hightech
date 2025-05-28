@@ -167,7 +167,7 @@ export const HeroSlider: React.FC = () => {
                 <img
                   src={slide.image}
                   alt={slide.altText}
-                  className="w-full h-auto object-contain"
+                  className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-auto object-cover lg:object-contain"
                   data-swiper-parallax="-23%"
                 />
                 

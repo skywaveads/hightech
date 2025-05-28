@@ -1,27 +1,20 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { Comment } from './models/Comment';
-import fs from 'fs';
-import path from 'path';
 
-// Google Sheets configuration
-let GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
-let GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-let GOOGLE_SHEETS_SHEET_ID = process.env.GOOGLE_SHEETS_SHEET_ID;
+// Google Sheets configuration from environment variables only
+const GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+const GOOGLE_SHEETS_SHEET_ID = process.env.GOOGLE_SHEETS_SHEET_ID;
 
-// Fallback: read from service account file if env vars not available
-if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL) {
-  try {
-    const serviceAccountPath = path.join(process.cwd(), 'google-service-account.json');
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      GOOGLE_SHEETS_PRIVATE_KEY = serviceAccount.private_key;
-      GOOGLE_SHEETS_CLIENT_EMAIL = serviceAccount.client_email;
-      console.log('[GoogleSheets] Using service account file for authentication');
-    }
-  } catch (error) {
-    console.error('[GoogleSheets] Error reading service account file:', error);
-  }
+// Log configuration status
+if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_SHEET_ID) {
+  console.warn('[GoogleSheets] Missing required environment variables:');
+  console.warn('- GOOGLE_SHEETS_PRIVATE_KEY:', !!GOOGLE_SHEETS_PRIVATE_KEY);
+  console.warn('- GOOGLE_SHEETS_CLIENT_EMAIL:', !!GOOGLE_SHEETS_CLIENT_EMAIL);
+  console.warn('- GOOGLE_SHEETS_SHEET_ID:', !!GOOGLE_SHEETS_SHEET_ID);
+} else {
+  console.log('[GoogleSheets] Configuration loaded from environment variables');
 }
 
 // Cache for worksheet

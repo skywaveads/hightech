@@ -1,32 +1,19 @@
 import { Comment } from './models/Comment';
 import { GoogleSheetsDatabase } from './google-sheets';
-import fs from 'fs';
-import path from 'path';
 
-// Check for database configuration
-let GOOGLE_SHEETS_SHEET_ID = process.env.GOOGLE_SHEETS_SHEET_ID;
-let GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-
-// Fallback: read from service account file if env vars not available
-if (!GOOGLE_SHEETS_SHEET_ID || !GOOGLE_SHEETS_CLIENT_EMAIL) {
-  try {
-    const serviceAccountPath = path.join(process.cwd(), 'google-service-account.json');
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      GOOGLE_SHEETS_CLIENT_EMAIL = serviceAccount.client_email;
-      GOOGLE_SHEETS_SHEET_ID = GOOGLE_SHEETS_SHEET_ID || '1HfbaI2kPNNLLvEcjZ9Lh6U5CKEfgH6fkoRd8xHwFaZY';
-      console.log('✅ Loaded database config from service account file');
-    }
-  } catch (error) {
-    console.warn('⚠️ Could not load service account file for database config:', error);
-  }
-}
+// Database configuration from environment variables only
+const GOOGLE_SHEETS_SHEET_ID = process.env.GOOGLE_SHEETS_SHEET_ID;
+const GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+const GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
 
 console.log('🔧 Database configuration: Google Sheets');
 
-if (!GOOGLE_SHEETS_SHEET_ID || !GOOGLE_SHEETS_CLIENT_EMAIL) {
+if (!GOOGLE_SHEETS_SHEET_ID || !GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_PRIVATE_KEY) {
   console.warn('⚠️ Google Sheets credentials not fully configured');
-  console.warn('📁 Please check your .env.local file for Google Sheets settings');
+  console.warn('📁 Missing environment variables:');
+  console.warn('- GOOGLE_SHEETS_SHEET_ID:', !!GOOGLE_SHEETS_SHEET_ID);
+  console.warn('- GOOGLE_SHEETS_CLIENT_EMAIL:', !!GOOGLE_SHEETS_CLIENT_EMAIL);
+  console.warn('- GOOGLE_SHEETS_PRIVATE_KEY:', !!GOOGLE_SHEETS_PRIVATE_KEY);
 } else {
   console.log('✅ Google Sheets configured for database operations');
   console.log('📊 Sheet ID:', GOOGLE_SHEETS_SHEET_ID);
