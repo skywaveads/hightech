@@ -1,4 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { JWT } from 'google-auth-library';
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+
+// Helper function to process private key with multiple encoding formats
+function processPrivateKey(privateKey: string): string {
+  if (!privateKey) {
+    throw new Error('Private key is missing');
+  }
+
+  let processedKey = privateKey;
+
+  // Method 1: Replace escaped newlines
+  processedKey = processedKey.replace(/\\n/g, '\n');
+
+  // Method 2: If key doesn't have proper headers, it might be base64 encoded
+  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    try {
+      const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
+      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
+        processedKey = decoded;
+      }
+    } catch (error) {
+      // Continue with original
+    }
+  }
+
+  // Method 3: Ensure proper line breaks around headers
+  if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
+    processedKey = processedKey
+      .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
+      .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
+      .replace(/\n\n+/g, '\n');
+  }
+
+  // Method 4: If still no proper headers, try to reconstruct
+  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    const keyContent = processedKey.replace(/\s/g, '');
+    if (keyContent.length > 0) {
+      const formattedKey = `-----BEGIN PRIVATE KEY-----\n${keyContent.match(/.{1,64}/g)?.join('\n') || keyContent}\n-----END PRIVATE KEY-----`;
+      processedKey = formattedKey;
+    }
+  }
+
+  return processedKey;
+}
 
 export async function GET(request: NextRequest) {
   const diagnostics = {
@@ -128,48 +173,6 @@ export async function GET(request: NextRequest) {
       authTest.details = { error: 'Missing credentials for JWT' };
     } else {
       // Use the same private key processing logic as the main implementation
-      function processPrivateKey(privateKey: string): string {
-        if (!privateKey) {
-          throw new Error('Private key is missing');
-        }
-
-        let processedKey = privateKey;
-
-        // Method 1: Replace escaped newlines
-        processedKey = processedKey.replace(/\\n/g, '\n');
-
-        // Method 2: If key doesn't have proper headers, it might be base64 encoded
-        if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          try {
-            const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
-            if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
-              processedKey = decoded;
-            }
-          } catch (error) {
-            // Continue with original
-          }
-        }
-
-        // Method 3: Ensure proper line breaks around headers
-        if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
-          processedKey = processedKey
-            .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
-            .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
-            .replace(/\n\n+/g, '\n');
-        }
-
-        // Method 4: If still no proper headers, try to reconstruct
-        if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          const keyContent = processedKey.replace(/\s/g, '');
-          if (keyContent.length > 0) {
-            const formattedKey = `-----BEGIN PRIVATE KEY-----\n${keyContent.match(/.{1,64}/g)?.join('\n') || keyContent}\n-----END PRIVATE KEY-----`;
-            processedKey = formattedKey;
-          }
-        }
-
-        return processedKey;
-      }
-
       const processedPrivateKey = processPrivateKey(rawPrivateKey);
       
       const authClient = new JWT({
