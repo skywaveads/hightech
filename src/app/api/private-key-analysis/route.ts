@@ -1,5 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Define interfaces for type safety
+interface ProcessingStep {
+  step: number;
+  name: string;
+  before: number;
+  after: number;
+  changed: boolean;
+  success?: boolean;
+  error?: string;
+}
+
+interface RawKeyAnalysis {
+  exists: boolean;
+  length: number;
+  isEmpty: boolean;
+  startsWithQuote: boolean;
+  endsWithQuote: boolean;
+  containsEscapedNewlines: boolean;
+  containsRealNewlines: boolean;
+  containsBeginHeader: boolean;
+  containsEndHeader: boolean;
+  firstChars: string;
+  lastChars: string;
+  lineCount: number;
+  escapedLineCount: number;
+  hasCarriageReturn: boolean;
+  hasTab: boolean;
+  encoding: string;
+}
+
+interface FinalResult {
+  success: boolean;
+  processedKey: string;
+  length?: number;
+  lineCount?: number;
+  error: string;
+  jwtTest?: {
+    success: boolean;
+    error: string;
+  };
+}
+
+interface Analysis {
+  timestamp: string;
+  environment: string;
+  rawKeyAnalysis: RawKeyAnalysis;
+  processingSteps: ProcessingStep[];
+  finalResult: FinalResult;
+}
+
 export async function GET(request: NextRequest) {
   try {
     console.log('[PrivateKeyAnalysis] Starting detailed private key analysis...');
@@ -7,7 +57,7 @@ export async function GET(request: NextRequest) {
     const rawKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY || '';
     
     // تحليل شامل للمفتاح الخام
-    const analysis = {
+    const analysis: Analysis = {
       timestamp: new Date().toISOString(),
       environment: 'vercel',
       rawKeyAnalysis: {
@@ -43,7 +93,8 @@ export async function GET(request: NextRequest) {
       name: 'Initial Trim',
       before: rawKey.length,
       after: processedKey.length,
-      changed: rawKey.length !== processedKey.length
+      changed: rawKey.length !== processedKey.length,
+      success: true
     });
 
     // خطوة 2: معالجة JSON-escaped strings
@@ -55,7 +106,8 @@ export async function GET(request: NextRequest) {
         name: 'JSON Escape Processing',
         before: beforeLength,
         after: processedKey.length,
-        changed: beforeLength !== processedKey.length
+        changed: beforeLength !== processedKey.length,
+        success: true
       });
     }
 
@@ -69,7 +121,8 @@ export async function GET(request: NextRequest) {
         name: 'Quote Removal',
         before: beforeLength,
         after: processedKey.length,
-        changed: beforeLength !== processedKey.length
+        changed: beforeLength !== processedKey.length,
+        success: true
       });
     }
 
@@ -114,7 +167,8 @@ export async function GET(request: NextRequest) {
         name: 'Line Break Fixing',
         before: beforeLength,
         after: processedKey.length,
-        changed: beforeLength !== processedKey.length
+        changed: beforeLength !== processedKey.length,
+        success: true
       });
     }
 
@@ -129,9 +183,14 @@ export async function GET(request: NextRequest) {
 
     // محاولة إنشاء JWT للاختبار
     try {
+      const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+      if (!clientEmail) {
+        throw new Error('GOOGLE_SHEETS_CLIENT_EMAIL environment variable is not set');
+      }
+
       const { JWT } = await import('google-auth-library');
       const testJWT = new JWT({
-        email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+        email: clientEmail,
         key: processedKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
       });
@@ -140,8 +199,8 @@ export async function GET(request: NextRequest) {
       await testJWT.authorize();
       analysis.finalResult.jwtTest = { success: true, error: '' };
     } catch (error) {
-      analysis.finalResult.jwtTest = { 
-        success: false, 
+      analysis.finalResult.jwtTest = {
+        success: false,
         error: error instanceof Error ? error.message : 'Unknown JWT error'
       };
     }
