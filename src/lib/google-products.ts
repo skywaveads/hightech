@@ -18,6 +18,58 @@ let productsWorksheet: any = null;
 let productsWorksheetCacheTime = 0;
 const WORKSHEET_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
+// Enhanced private key processing for Vercel compatibility
+function processPrivateKeyForVercel(rawKey: string): string {
+  console.log('[GoogleProducts] Processing private key for Vercel...');
+  console.log('[GoogleProducts] Raw key length:', rawKey.length);
+  console.log('[GoogleProducts] Raw key preview:', rawKey.substring(0, 50) + '...');
+
+  let processedKey = rawKey.trim();
+
+  // Method 1: Handle JSON-escaped strings (common in Vercel)
+  if (processedKey.includes('\\n')) {
+    processedKey = processedKey.replace(/\\n/g, '\n');
+    console.log('[GoogleProducts] Applied \\n replacement');
+  }
+
+  // Method 2: Remove surrounding quotes if present
+  if ((processedKey.startsWith('"') && processedKey.endsWith('"')) ||
+      (processedKey.startsWith("'") && processedKey.endsWith("'"))) {
+    processedKey = processedKey.slice(1, -1);
+    console.log('[GoogleProducts] Removed surrounding quotes');
+  }
+
+  // Method 3: Handle base64 encoded keys
+  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.length > 100) {
+    try {
+      const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
+      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
+        processedKey = decoded;
+        console.log('[GoogleProducts] Successfully decoded base64 key');
+      }
+    } catch (error) {
+      console.log('[GoogleProducts] Base64 decode failed, using original');
+    }
+  }
+
+  // Method 4: Ensure proper line breaks
+  if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
+    // Fix line breaks around headers
+    processedKey = processedKey
+      .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
+      .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
+      .replace(/\n\n+/g, '\n');
+    console.log('[GoogleProducts] Fixed line breaks around headers');
+  }
+
+  console.log('[GoogleProducts] Final key length:', processedKey.length);
+  console.log('[GoogleProducts] Has BEGIN header:', processedKey.includes('-----BEGIN PRIVATE KEY-----'));
+  console.log('[GoogleProducts] Has END header:', processedKey.includes('-----END PRIVATE KEY-----'));
+  console.log('[GoogleProducts] Final key preview:', processedKey.substring(0, 100) + '...');
+
+  return processedKey;
+}
+
 // Create reusable auth client
 function getAuthClient(): JWT {
   if (!authClient) {
@@ -30,12 +82,10 @@ function getAuthClient(): JWT {
         throw new Error("GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables");
       }
 
-      // تحويل أي \\n إلى \n ثم تمرير المفتاح إلى google.auth.JWT
-      const processedPrivateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n');
+      // معالجة محسنة للمفتاح الخاص للتوافق مع Vercel
+      const processedPrivateKey = processPrivateKeyForVercel(process.env.GOOGLE_SHEETS_PRIVATE_KEY);
       
-      console.log('[GoogleProducts] Creating JWT client with simple key processing');
-      console.log('[GoogleProducts] Key length after processing:', processedPrivateKey.length);
-      console.log('[GoogleProducts] Key has proper headers:', processedPrivateKey.includes('-----BEGIN PRIVATE KEY-----'));
+      console.log('[GoogleProducts] Creating JWT client with enhanced Vercel-compatible key processing');
       
       authClient = new JWT({
         email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
