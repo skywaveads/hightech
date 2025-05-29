@@ -2,18 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { JWT } from 'google-auth-library';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 
-// Helper function to process private key with multiple encoding formats
+// Enhanced helper function to process private key with multiple encoding formats and fallbacks
 function processPrivateKey(privateKey: string): string {
   if (!privateKey) {
     throw new Error('Private key is missing');
   }
 
-  let processedKey = privateKey;
+  let processedKey = privateKey.trim();
 
-  // Method 1: Replace escaped newlines
+  // Method 1: Remove any extra quotes that might be wrapping the key
+  processedKey = processedKey.replace(/^["']|["']$/g, '');
+
+  // Method 2: Replace escaped newlines
   processedKey = processedKey.replace(/\\n/g, '\n');
 
-  // Method 2: If key doesn't have proper headers, it might be base64 encoded
+  // Method 3: Try to decode if it looks like URL-encoded
+  if (processedKey.includes('%')) {
+    try {
+      processedKey = decodeURIComponent(processedKey);
+    } catch (error) {
+      // Continue with original
+    }
+  }
+
+  // Method 4: If key doesn't have proper headers, it might be base64 encoded
   if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
     try {
       const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
@@ -25,7 +37,24 @@ function processPrivateKey(privateKey: string): string {
     }
   }
 
-  // Method 3: Ensure proper line breaks around headers
+  // Method 5: Try alternative base64 decoding with padding
+  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    try {
+      // Add padding if missing
+      let paddedKey = processedKey;
+      while (paddedKey.length % 4) {
+        paddedKey += '=';
+      }
+      const decoded = Buffer.from(paddedKey, 'base64').toString('utf8');
+      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
+        processedKey = decoded;
+      }
+    } catch (error) {
+      // Continue with original
+    }
+  }
+
+  // Method 6: Ensure proper line breaks around headers
   if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
     processedKey = processedKey
       .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
@@ -33,13 +62,37 @@ function processPrivateKey(privateKey: string): string {
       .replace(/\n\n+/g, '\n');
   }
 
-  // Method 4: If still no proper headers, try to reconstruct
+  // Method 7: If still no proper headers, try to reconstruct
   if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
     const keyContent = processedKey.replace(/\s/g, '');
     if (keyContent.length > 0) {
       const formattedKey = `-----BEGIN PRIVATE KEY-----\n${keyContent.match(/.{1,64}/g)?.join('\n') || keyContent}\n-----END PRIVATE KEY-----`;
       processedKey = formattedKey;
     }
+  }
+
+  // Method 8: Final cleanup and validation
+  if (processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    const lines = processedKey.split('\n');
+    const cleanLines = lines.map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Ensure first line is the header
+    if (cleanLines[0] !== '-----BEGIN PRIVATE KEY-----') {
+      const headerIndex = cleanLines.findIndex(line => line === '-----BEGIN PRIVATE KEY-----');
+      if (headerIndex > 0) {
+        cleanLines.splice(0, headerIndex);
+      }
+    }
+    
+    // Ensure last line is the footer
+    if (cleanLines[cleanLines.length - 1] !== '-----END PRIVATE KEY-----') {
+      const footerIndex = cleanLines.findIndex(line => line === '-----END PRIVATE KEY-----');
+      if (footerIndex >= 0 && footerIndex < cleanLines.length - 1) {
+        cleanLines.splice(footerIndex + 1);
+      }
+    }
+    
+    processedKey = cleanLines.join('\n');
   }
 
   return processedKey;
@@ -172,8 +225,8 @@ export async function GET(request: NextRequest) {
       authTest.status = 'fail';
       authTest.details = { error: 'Missing credentials for JWT' };
     } else {
-      // Use the same private key processing logic as the main implementation
-      const processedPrivateKey = processPrivateKey(rawPrivateKey);
+      // Use simple direct processing as suggested
+      const processedPrivateKey = rawPrivateKey.replace(/\\n/g, '\n');
       
       const authClient = new JWT({
         email: clientEmail,
