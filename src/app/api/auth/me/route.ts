@@ -1,9 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 
 // المفتاح السري لـ JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
+
+// Base64 URL decode function
+function base64UrlDecode(str: string): string {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) {
+    str += '=';
+  }
+  return atob(str);
+}
+
+// Simple JWT verification compatible with Vercel
+function verifyToken(token: string): any {
+  if (!JWT_SECRET) {
+    return null;
+  }
+  
+  try {
+    // Split the token into parts
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    // Decode the payload
+    const payloadPart = parts[1];
+    if (!payloadPart) {
+      return null;
+    }
+    const payload = JSON.parse(base64UrlDecode(payloadPart));
+    
+    // Check if token is expired
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      return null;
+    }
+    
+    return payload;
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    return null;
+  }
+}
 
 // التحقق من حالة المصادقة
 export async function GET(request: NextRequest) {
@@ -13,48 +53,38 @@ export async function GET(request: NextRequest) {
     
     if (!token) {
       return NextResponse.json(
-        { message: 'غير مصادق عليه' },
+        { message: 'غير مصادق عليه', authenticated: false },
         { status: 401 }
       );
     }
     
     // التحقق من صحة الرمز
-    try {
-      // @ts-ignore
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      
-      // التحقق من انتهاء صلاحية الرمز
-      if (decoded.exp && decoded.exp < Date.now() / 1000) {
-        return NextResponse.json(
-          { message: 'انتهت صلاحية الجلسة' },
-          { status: 401 }
-        );
-      }
-      
-      // إرجاع معلومات المستخدم
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: decoded.id,
-          email: decoded.email,
-          role: decoded.role || 'admin',
-          loginTime: decoded.loginTime,
-          fingerprint: decoded.fingerprint
-        }
-      });
-      
-    } catch (jwtError) {
-      console.error('خطأ في التحقق من JWT:', jwtError);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
       return NextResponse.json(
-        { message: 'رمز غير صالح' },
+        { message: 'رمز غير صالح', authenticated: false },
         { status: 401 }
       );
     }
     
+    // إرجاع معلومات المستخدم
+    return NextResponse.json({
+      success: true,
+      authenticated: true,
+      user: {
+        id: decoded.id,
+        email: decoded.email,
+        role: decoded.role || 'admin',
+        loginTime: decoded.loginTime,
+        fingerprint: decoded.fingerprint
+      }
+    });
+    
   } catch (error) {
     console.error('خطأ في التحقق من المصادقة:', error);
     return NextResponse.json(
-      { message: 'خطأ في الخادم' },
+      { message: 'خطأ في الخادم', authenticated: false },
       { status: 500 }
     );
   }

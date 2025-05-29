@@ -480,7 +480,7 @@ export class GoogleSheetsDatabase {
       if (email === adminEmail) {
         // Return a simulated admin object with hashed password
         // Note: In a real implementation, you'd store this in a separate Google Sheet
-        const bcrypt = require('bcryptjs');
+        const bcrypt = await import('bcryptjs');
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
         
         return {

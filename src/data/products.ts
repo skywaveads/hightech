@@ -22,7 +22,7 @@ export const initialProducts: Product[] = [
     sku: 'HCTA3-2025',
     images: [
       {
-        url: '/images/products/highcut-a3.jpg',
+        url: '/images/products_hero/1.jpg',
         alt: 'هاي كت A3'
       }
     ],
@@ -45,7 +45,7 @@ export const initialProducts: Product[] = [
     sku: 'HCT720-2025',
     images: [
       {
-        url: '/images/products/highcut-720.jpg',
+        url: '/images/products_hero/2.jpg',
         alt: 'هاي كت 720'
       }
     ],
@@ -68,7 +68,7 @@ export const initialProducts: Product[] = [
     sku: 'RVNPRO-2025',
     images: [
       {
-        url: '/images/products/revina-pro.jpg',
+        url: '/images/products_hero/3.jpg',
         alt: 'ريفينا برو'
       }
     ],
@@ -91,7 +91,7 @@ export const initialProducts: Product[] = [
     sku: 'HCTA4-2025',
     images: [
       {
-        url: '/images/products/highcut-a4.jpg',
+        url: '/images/products_hero/4.jpg',
         alt: 'هاي كت A4'
       }
     ],
@@ -114,7 +114,7 @@ export const initialProducts: Product[] = [
     sku: 'HTHP-2025',
     images: [
       {
-        url: '/images/products/heat-press.jpg',
+        url: '/images/products_hero/5.jpg',
         alt: 'مكبس حراري بريميوم برو'
       }
     ],
@@ -137,7 +137,7 @@ export const initialProducts: Product[] = [
     sku: 'RVNVI-2025',
     images: [
       {
-        url: '/images/products/vinyl.jpg',
+        url: '/images/products_hero/1.jpg',
         alt: 'فينيل حراري بريميوم'
       }
     ],

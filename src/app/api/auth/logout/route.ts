@@ -30,11 +30,21 @@ export async function POST(request: NextRequest) {
     
     if (token) {
       try {
-        const jwt = require('jsonwebtoken');
-        const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
-        // @ts-ignore
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        userEmail = decoded.email || '';
+        // Edge Runtime compatible JWT decoding
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payloadPart = parts[1];
+          if (payloadPart) {
+            // Add padding if needed
+            let payload = payloadPart;
+            payload += '='.repeat((4 - payload.length % 4) % 4);
+            // Replace URL-safe characters
+            payload = payload.replace(/-/g, '+').replace(/_/g, '/');
+            // Decode base64
+            const decoded = JSON.parse(atob(payload));
+            userEmail = decoded.email || '';
+          }
+        }
       } catch (error) {
         // تجاهل أخطاء فك التشفير
       }

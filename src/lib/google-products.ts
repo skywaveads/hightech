@@ -1,6 +1,7 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { google } from 'googleapis';
+import { Readable } from 'stream';
 import { Product } from '@/types/product';
 import fs from 'fs';
 import path from 'path';
@@ -76,7 +77,7 @@ export async function uploadImageToDrive(
 
     const media = {
       mimeType,
-      body: require('stream').Readable.from(imageBuffer),
+      body: Readable.from(imageBuffer),
     };
 
     console.log(`[GoogleDrive] Creating file with metadata:`, fileMetadata);
