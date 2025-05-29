@@ -16,7 +16,7 @@ const products = [
     name: 'هاي كت A3',
     category: 'تغذية الورق',
     description: 'كتر بلوتر مثالي للمساحات الصغيرة ومحلات الهدايا وطباعة التيشيرتات',
-    image: '/images/products/highcut-a3.jpg',
+    image: '/images/products_hero/1.jpg',
     features: [
       'مساحة قص A3 (297 × 420 مم)',
       'دقة قص 0.025 مم',
@@ -31,7 +31,7 @@ const products = [
     name: 'هاي كت 720',
     category: 'تغذية الرول',
     description: 'كتر بلوتر احترافي لمراكز الطباعة المتوسطة وشركات الإعلان والدعاية',
-    image: '/images/products/highcut-720.jpg',
+    image: '/images/products_hero/2.jpg',
     features: [
       'عرض قص 720 مم (72 سم)',
       'دقة قص 0.01 مم',
@@ -47,7 +47,7 @@ const products = [
     name: 'ريفينا برو',
     category: 'احترافي',
     description: 'كتر بلوتر متطور للمطابع الكبرى ومصانع الملابس ومراكز الإنتاج الصناعي',
-    image: '/images/products/revina-pro.jpg',
+    image: '/images/products_hero/3.jpg',
     features: [
       'عرض قص 1200 مم (120 سم)',
       'دقة قص 0.005 مم',
@@ -64,7 +64,7 @@ const products = [
     name: 'هاي كت A4',
     category: 'تغذية الورق',
     description: 'كتر بلوتر مدمج للاستخدام المنزلي والمشاريع الصغيرة',
-    image: '/images/products/highcut-a4.jpg',
+    image: '/images/products_hero/4.jpg',
     features: [
       'مساحة قص A4 (210 × 297 مم)',
       'دقة قص 0.025 مم',
@@ -79,7 +79,7 @@ const products = [
     name: 'هاي كت 1200',
     category: 'تغذية الرول',
     description: 'كتر بلوتر احترافي للمطابع الكبيرة ومراكز الإنتاج الضخمة',
-    image: '/images/products/highcut-1200.jpg',
+    image: '/images/products_hero/5.jpg',
     features: [
       'عرض قص 1200 مم (120 سم)',
       'دقة قص 0.01 مم',
@@ -95,7 +95,7 @@ const products = [
     name: 'ريفينا لايت',
     category: 'احترافي',
     description: 'كتر بلوتر متوسط للمطابع والشركات متوسطة الحجم',
-    image: '/images/products/revina-lite.jpg',
+    image: '/images/products_hero/1.jpg',
     features: [
       'عرض قص 900 مم (90 سم)',
       'دقة قص 0.01 مم',
