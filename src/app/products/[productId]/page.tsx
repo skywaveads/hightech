@@ -68,7 +68,21 @@ export default function ProductPage({ params }: ProductPageProps) {
         // First try to get all products and find by slug
         const allProductsResponse = await fetch('/api/products');
         if (allProductsResponse.ok) {
-          const allProducts = await allProductsResponse.json();
+          const apiData = await allProductsResponse.json();
+          
+          // Handle new API response structure
+          let allProducts: Product[] = [];
+          if (apiData && apiData.success && apiData.products && Array.isArray(apiData.products)) {
+            allProducts = apiData.products;
+          } else if (apiData && Array.isArray(apiData)) {
+            // Fallback for old API response format
+            allProducts = apiData;
+          } else {
+            console.warn('No products found in API response');
+            setLoading(false);
+            return;
+          }
+          
           const productData = allProducts.find((p: Product) =>
             p.slug === params.productId && p.isActive
           );

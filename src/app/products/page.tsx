@@ -228,8 +228,17 @@ function ProductsContent() {
         }
         
         const data = await response.json();
-        if (data && data.length > 0) {
+        
+        // Handle new API response structure
+        if (data && data.success && data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+          console.log(`Products loaded from ${data.source}:`, data.products.length);
+        } else if (data && Array.isArray(data) && data.length > 0) {
+          // Fallback for old API response format (just in case)
           setProducts(data);
+          console.log('Products loaded (legacy format):', data.length);
+        } else {
+          console.warn('No products found in API response, keeping fallback data');
         }
         
       } catch (err) {

@@ -212,10 +212,21 @@ export default function ProductsAdminPage() {
       }
       
       const data = await response.json();
-      setProducts(data);
+      
+      // Handle new API response structure
+      if (data && data.success && data.products && Array.isArray(data.products)) {
+        setProducts(data.products);
+      } else if (data && Array.isArray(data)) {
+        // Fallback for old API response format
+        setProducts(data);
+      } else {
+        console.warn('No products found in API response');
+        setProducts([]);
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
       showToast('فشل في تحميل المنتجات', 'error');
+      setProducts([]);
     } finally {
       setLoading(false);
     }

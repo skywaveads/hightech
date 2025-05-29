@@ -20,9 +20,20 @@ const ProductRange: React.FC = () => {
           throw new Error('Failed to fetch products');
         }
         const data = await response.json();
-        setProducts(data);
+        
+        // Handle new API response structure
+        if (data && data.success && data.products && Array.isArray(data.products)) {
+          setProducts(data.products.slice(0, 6)); // Ensure we only take 6 products
+        } else if (data && Array.isArray(data)) {
+          // Fallback for old API response format
+          setProducts(data.slice(0, 6));
+        } else {
+          console.warn('No products found in API response');
+          setProducts([]);
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
