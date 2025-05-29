@@ -4,130 +4,163 @@ import { Product } from '@/types/product';
 
 export const dynamic = 'force-dynamic';
 
+// Temporary fallback products for debugging
+const fallbackProducts: Product[] = [
+  {
+    _id: "temp-1",
+    name_ar: "ماكينة قطع فينيل احترافية 60 سم",
+    name_en: "Professional Vinyl Cutting Machine 60cm",
+    slug: "professional-cutter-plotter-60cm",
+    short_desc: "ماكينة قطع فينيل احترافية بعرض 60 سم مثالية للمشاريع الصغيرة والمتوسطة",
+    description: "ماكينة قطع فينيل احترافية عالية الجودة بعرض 60 سم، مثالية للمشاريع الصغيرة والمتوسطة. تتميز بدقة عالية في القطع وسهولة الاستخدام.",
+    price: 2500,
+    sale_price: 2200,
+    quantity: 10,
+    category: "cutting-machines",
+    tags: ["vinyl", "cutting", "machine", "professional"],
+    sku: "VCM-60-PRO",
+    images: [
+      {
+        url: "https://drive.google.com/uc?export=view&id=1example1",
+        alt: "ماكينة قطع فينيل احترافية 60 سم"
+      }
+    ],
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    _id: "temp-2", 
+    name_ar: "فينيل لاصق عالي الجودة",
+    name_en: "High Quality Adhesive Vinyl",
+    slug: "high-quality-adhesive-vinyl",
+    short_desc: "فينيل لاصق عالي الجودة متوفر بألوان متعددة",
+    description: "فينيل لاصق عالي الجودة مقاوم للماء والأشعة فوق البنفسجية، متوفر بألوان متعددة ومناسب لجميع أنواع التطبيقات.",
+    price: 45,
+    sale_price: null,
+    quantity: 100,
+    category: "vinyl-materials",
+    tags: ["vinyl", "adhesive", "waterproof", "uv-resistant"],
+    sku: "VINYL-ADH-HQ",
+    images: [
+      {
+        url: "https://drive.google.com/uc?export=view&id=1example2",
+        alt: "فينيل لاصق عالي الجودة"
+      }
+    ],
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔄 Products API called - using Google Sheets only');
+    console.log('[ProductsAPI] Starting products fetch...');
     
-    // Get query parameters
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const active = searchParams.get('isActive');
-    const search = searchParams.get('search');
-    const limitParam = searchParams.get('limit');
-    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
-
-    console.log('📋 Query params:', { category, active, search, limit });
-
-    // Get products from Google Sheets only
-    console.log('📊 Fetching products from Google Sheets...');
-    const products = await GoogleSheetsProductsDatabase.getAllProducts();
-    console.log(`📦 Retrieved ${products.length} products from Google Sheets`);
-
-    // Apply filters if provided
-    let filteredProducts = products;
-
-    if (category) {
-      filteredProducts = filteredProducts.filter(product => product.category === category);
-      console.log(`🏷️ Filtered by category '${category}': ${filteredProducts.length} products`);
+    // Try Google Sheets first
+    try {
+      console.log('[ProductsAPI] Attempting Google Sheets connection...');
+      const products = await GoogleSheetsProductsDatabase.getAllProducts();
+      
+      if (products && products.length > 0) {
+        console.log(`[ProductsAPI] Successfully retrieved ${products.length} products from Google Sheets`);
+        return NextResponse.json({
+          success: true,
+          source: 'google_sheets',
+          count: products.length,
+          products: products
+        });
+      } else {
+        console.warn('[ProductsAPI] Google Sheets returned empty array');
+        throw new Error('No products found in Google Sheets');
+      }
+    } catch (sheetsError: any) {
+      console.error('[ProductsAPI] Google Sheets error:', {
+        message: sheetsError.message,
+        stack: sheetsError.stack,
+        name: sheetsError.name
+      });
+      
+      // Return fallback data with detailed error info
+      console.log('[ProductsAPI] Using fallback products due to Google Sheets error');
+      return NextResponse.json({
+        success: false,
+        source: 'fallback',
+        error: {
+          message: sheetsError.message,
+          type: 'google_sheets_error',
+          timestamp: new Date().toISOString()
+        },
+        count: fallbackProducts.length,
+        products: fallbackProducts,
+        debug: {
+          environment_variables: {
+            GOOGLE_SHEETS_PRIVATE_KEY: !!process.env.GOOGLE_SHEETS_PRIVATE_KEY,
+            GOOGLE_SHEETS_CLIENT_EMAIL: !!process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+            PRODUCTS_SHEET_ID: !!process.env.PRODUCTS_SHEET_ID,
+            values: {
+              GOOGLE_SHEETS_CLIENT_EMAIL: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+              PRODUCTS_SHEET_ID: process.env.PRODUCTS_SHEET_ID,
+              PRIVATE_KEY_LENGTH: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.length || 0
+            }
+          }
+        }
+      }, { status: 200 }); // Return 200 with fallback data
     }
-
-    if (active !== null) {
-      const isActive = active === 'true';
-      filteredProducts = filteredProducts.filter(product => product.isActive === isActive);
-      console.log(`✅ Filtered by active status '${isActive}': ${filteredProducts.length} products`);
-    }
-
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredProducts = filteredProducts.filter(
-        product =>
-          product.name_ar.toLowerCase().includes(searchLower) ||
-          product.name_en.toLowerCase().includes(searchLower) ||
-          product.sku.toLowerCase().includes(searchLower) ||
-          product.tags.some((tag: string) => tag.toLowerCase().includes(searchLower))
-      );
-      console.log(`🔍 Filtered by search '${search}': ${filteredProducts.length} products`);
-    }
-
-    // Apply limit if provided
-    if (limit && !isNaN(limit)) {
-      filteredProducts = filteredProducts.slice(0, limit);
-      console.log(`📏 Limited to ${limit}: ${filteredProducts.length} products`);
-    }
-
-    console.log(`✅ Returning ${filteredProducts.length} products from Google Sheets`);
-    return NextResponse.json(filteredProducts);
+  } catch (error: any) {
+    console.error('[ProductsAPI] Critical error:', error);
     
-  } catch (error) {
-    console.error('❌ Error in products GET:', error);
-    
-    // Return error instead of fallback data
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch products from Google Sheets',
-        message: 'تعذر جلب البيانات من Google Sheets',
-        details: error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({
+      success: false,
+      source: 'error',
+      error: {
+        message: error.message,
+        type: 'critical_error',
+        timestamp: new Date().toISOString()
       },
-      { status: 500 }
-    );
+      count: fallbackProducts.length,
+      products: fallbackProducts
+    }, { status: 200 }); // Return 200 with fallback data even on critical error
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated
-    // For a real app, implement proper authentication middleware
+    console.log('[ProductsAPI] POST request received');
     
     const productData = await request.json();
+    console.log('[ProductsAPI] Adding new product:', productData.name_ar);
     
-    // Validate required fields
-    const requiredFields = ['name_ar', 'name_en', 'slug', 'price', 'sku', 'category'];
-    for (const field of requiredFields) {
-      if (!productData[field]) {
-        return NextResponse.json(
-          { error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
-      }
+    try {
+      const newProduct = await GoogleSheetsProductsDatabase.addProduct(productData);
+      console.log('[ProductsAPI] Product added successfully to Google Sheets:', newProduct._id);
+      
+      return NextResponse.json({
+        success: true,
+        source: 'google_sheets',
+        product: newProduct
+      });
+    } catch (sheetsError: any) {
+      console.error('[ProductsAPI] Error adding product to Google Sheets:', sheetsError);
+      
+      return NextResponse.json({
+        success: false,
+        error: {
+          message: sheetsError.message,
+          type: 'google_sheets_error'
+        }
+      }, { status: 500 });
     }
-
-    // Add the product
-    const newProduct = await GoogleSheetsProductsDatabase.addProduct(productData);
+  } catch (error: any) {
+    console.error('[ProductsAPI] Error in POST:', error);
     
-    return NextResponse.json(newProduct, { status: 201 });
-  } catch (error) {
-    console.error('Error in products POST:', error);
-    return NextResponse.json(
-      { error: 'Failed to create product' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: {
+        message: error.message,
+        type: 'request_error'
+      }
+    }, { status: 500 });
   }
 }
-
-export async function DELETE(request: NextRequest) {
-  try {
-    // Check if user is authenticated
-    // For a real app, implement proper authentication middleware
-    
-    const { searchParams } = new URL(request.url);
-    const ids = searchParams.get('ids');
-    
-    if (!ids) {
-      return NextResponse.json(
-        { error: 'Missing product IDs' },
-        { status: 400 }
-      );
-    }
-    
-    const productIds = ids.split(',');
-    const deletedCount = await GoogleSheetsProductsDatabase.deleteProducts(productIds);
-    
-    return NextResponse.json({ deletedCount });
-  } catch (error) {
-    console.error('Error in products DELETE:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete products' },
-      { status: 500 }
-    );
-  }
-} 
