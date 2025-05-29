@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSheetsProductsDatabase } from '@/lib/google-products';
+import { initialProducts } from '@/data/products';
+import { Product } from '@/types/product';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +10,22 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const product = await GoogleSheetsProductsDatabase.getProductById(params.id);
+    // Try Google Sheets first
+    let product = null;
+    
+    try {
+      product = await GoogleSheetsProductsDatabase.getProductById(params.id);
+    } catch (googleError) {
+      console.warn(`Google Sheets failed for product ${params.id}, using local data:`, googleError);
+      
+      // Fallback to local data
+      product = initialProducts.find((p: Product) => p._id === params.id || p.slug === params.id);
+    }
+    
+    if (!product) {
+      // Try local data as final fallback
+      product = initialProducts.find((p: Product) => p._id === params.id || p.slug === params.id);
+    }
     
     if (!product) {
       return NextResponse.json(
@@ -20,6 +37,17 @@ export async function GET(
     return NextResponse.json(product);
   } catch (error) {
     console.error(`Error in product GET for ID ${params.id}:`, error);
+    
+    // Final fallback to local data
+    try {
+      const product = initialProducts.find((p: Product) => p._id === params.id || p.slug === params.id);
+      if (product) {
+        return NextResponse.json(product);
+      }
+    } catch (fallbackError) {
+      console.error('Fallback also failed:', fallbackError);
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch product' },
       { status: 500 }
