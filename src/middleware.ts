@@ -4,20 +4,33 @@ import type { NextRequest } from 'next/server';
 // المفتاح السري لـ JWT من متغيرات البيئة
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// المسارات المحمية
+// المسارات المحمية (صفحات الإدمن فقط)
 const protectedPaths = [
   '/products-admin',
+  '/orders-admin',
+  '/comments-admin',
   '/admin',
   '/dashboard'
 ];
 
-// المسارات العامة التي لا تحتاج حماية
+// المسارات العامة التي لا تحتاج حماية (جميع صفحات الموقع العادية)
 const publicPaths = [
   '/',
   '/admin-login',
   '/api/auth/login',
   '/api/auth/logout',
-  '/api/auth/security-status'
+  '/api/auth/security-status',
+  '/products',
+  '/about',
+  '/contact',
+  '/blog',
+  '/industries',
+  '/checkout',
+  '/shipping',
+  '/returns',
+  '/terms',
+  '/privacy',
+  '/pages'
 ];
 
 // Base64 URL decode function
@@ -77,22 +90,19 @@ function getClientIP(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // السماح بالوصول للمسارات العامة
-  if (publicPaths.some(path => pathname.startsWith(path))) {
-    return NextResponse.next();
-  }
-  
-  // السماح بالوصول لملفات الأصول
-  if (pathname.startsWith('/_next') || 
-      pathname.startsWith('/favicon') || 
+  // السماح بالوصول لملفات الأصول والـ API routes
+  if (pathname.startsWith('/_next') ||
+      pathname.startsWith('/favicon') ||
+      pathname.startsWith('/api') ||
       pathname.includes('.')) {
     return NextResponse.next();
   }
   
-  // التحقق من المسارات المحمية
+  // التحقق من المسارات المحمية (صفحات الإدمن فقط)
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
   
   if (isProtectedPath) {
+    // هذا مسار محمي - يحتاج تحقق من الترخيص
     // الحصول على الرمز من الكوكيز
     const token = request.cookies.get('token')?.value;
     
@@ -175,7 +185,8 @@ export function middleware(request: NextRequest) {
     });
   }
   
-  // السماح بالوصول للمسارات الأخرى
+  // السماح بالوصول لجميع المسارات الأخرى (صفحات الموقع العادية)
+  // لا نحتاج تحقق من الترخيص للصفحات العامة
   return NextResponse.next();
 }
 
