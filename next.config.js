@@ -14,6 +14,8 @@ const nextConfig = {
     minimumCacheTTL: 31536000, // سنة واحدة
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    unoptimized: false, // تأكد من تحسين الصور
+    loader: 'default', // استخدام محمل الصور الافتراضي
     remotePatterns: [
       {
         protocol: 'http',
@@ -44,6 +46,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'www.hightech-eg.net',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'vercel.app',
         pathname: '/**',
       }
     ],
