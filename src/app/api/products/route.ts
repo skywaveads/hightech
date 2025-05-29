@@ -21,7 +21,7 @@ const fallbackProducts: Product[] = [
     sku: "VCM-60-PRO",
     images: [
       {
-        url: "https://drive.google.com/uc?export=view&id=1example1",
+        url: "/images/products_hero/1.jpg",
         alt: "ماكينة قطع فينيل احترافية 60 سم"
       }
     ],
@@ -44,7 +44,7 @@ const fallbackProducts: Product[] = [
     sku: "VINYL-ADH-HQ",
     images: [
       {
-        url: "https://drive.google.com/uc?export=view&id=1example2",
+        url: "/images/products_hero/2.jpg",
         alt: "فينيل لاصق عالي الجودة"
       }
     ],
