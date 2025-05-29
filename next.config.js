@@ -229,8 +229,8 @@ const nextConfig = {
   // إعدادات الملفات الثابتة
   trailingSlash: false,
   
-  // تحسين الأصول الثابتة
-  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
+  // تحسين الأصول الثابتة - إزالة assetPrefix لضمان عمل الصور
+  // assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
 };
 
 module.exports = nextConfig;

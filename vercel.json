@@ -6,43 +6,5 @@
   },
   "env": {
     "NEXT_PUBLIC_SITE_URL": "https://www.hightech-eg.net"
-  },
-  "headers": [
-    {
-      "source": "/images/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Content-Type",
-          "value": "image/*"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.(png|jpg|jpeg|gif|svg|webp|ico))",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/images/(.*)",
-      "destination": "/images/$1"
-    }
-  ]
+  }
 }

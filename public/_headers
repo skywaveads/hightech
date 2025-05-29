@@ -1,8 +1,18 @@
+# Static assets
 /images/*
   Cache-Control: public, max-age=31536000, immutable
-  X-Content-Type-Options: nosniff
+  Access-Control-Allow-Origin: *
 
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
+/*.(png|jpg|jpeg|gif|svg|webp|ico)
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Manifest and service worker
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json
+
+# Fonts
+/*.(woff|woff2|ttf|eot)
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
