@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vercel Test Suite - HighTech Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #117a8b;
+        }
+
+        .status {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status.loading {
+            color: #007bff;
+        }
+
+        .status.success {
+            color: #28a745;
+        }
+
+        .status.error {
+            color: #dc3545;
+        }
+
+        .results {
+            padding: 20px;
+        }
+
+        .test-suite {
+            margin-bottom: 30px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .suite-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suite-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .suite-summary {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .summary-item {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .summary-item.passed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .summary-item.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .summary-item.warnings {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .test-results {
+            padding: 0;
+        }
+
+        .test-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .test-message {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .test-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .test-status.pass {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .test-status.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .test-status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .overall-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .health-score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .recommendations h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .recommendation {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .recommendation.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .recommendation.warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .recommendation.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .environment-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .environment-info h4 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .env-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .env-item:last-child {
+            border-bottom: none;
+        }
+
+        .console-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .console-line {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .console-line.info {
+            color: #63b3ed;
+        }
+
+        .console-line.success {
+            color: #68d391;
+        }
+
+        .console-line.error {
+            color: #fc8181;
+        }
+
+        .console-line.warning {
+            color: #fbd38d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Vercel Test Suite</h1>
+            <p>اختبار شامل لموقع HighTech على منصة Vercel</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="runFullTestSuite()">
+                <span class="loading-spinner hidden" id="loadingSpinner"></span>
+                🧪 تشغيل الاختبارات الشاملة
+            </button>
+            <button class="btn btn-success" onclick="testEnvironment()">
+                🔍 فحص متغيرات البيئة
+            </button>
+            <button class="btn btn-warning" onclick="testAPIs()">
+                🌐 اختبار APIs
+            </button>
+            <button class="btn btn-info" onclick="testDatabase()">
+                💾 اختبار قاعدة البيانات
+            </button>
+            <button class="btn btn-primary" onclick="clearResults()">
+                🗑️ مسح النتائج
+            </button>
+        </div>
+
+        <div id="status" class="status hidden"></div>
+
+        <div id="environmentInfo" class="environment-info hidden">
+            <h4>معلومات البيئة</h4>
+            <div id="envDetails"></div>
+        </div>
+
+        <div id="results" class="results hidden"></div>
+
+        <div id="consoleOutput" class="console-output hidden">
+            <h4 style="color: #e2e8f0; margin-bottom: 15px;">📋 Console Output</h4>
+            <div id="consoleLines"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let consoleLines = [];
+
+        function addConsoleLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('ar-EG');
+            consoleLines.push({ timestamp, message, type });
+            updateConsoleOutput();
+        }
+
+        function updateConsoleOutput() {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const consoleLinesList = document.getElementById('consoleLines');
+            
+            consoleLinesList.innerHTML = consoleLines.map(line => 
+                `<div class="console-line ${line.type}">[${line.timestamp}] ${line.message}</div>`
+            ).join('');
+            
+            consoleOutput.classList.remove('hidden');
+            consoleLinesList.scrollTop = consoleLinesList.scrollHeight;
+        }
+
+        function showStatus(message, type = 'loading') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('status').classList.add('hidden');
+        }
+
+        function showLoading(show = true) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (show) {
+                spinner.classList.remove('hidden');
+            } else {
+                spinner.classList.add('hidden');
+            }
+        }
+
+        async function makeAPICall(endpoint, description) {
+            addConsoleLog(`🔄 Testing ${description}: ${endpoint}`, 'info');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(endpoint);
+                const duration = Date.now() - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addConsoleLog(`✅ ${description} - Success (${duration}ms)`, 'success');
+                    return { success: true, data, duration, status: response.status };
+                } else {
+                    addConsoleLog(`❌ ${description} - Failed: ${response.status} ${response.statusText}`, 'error');
+                    return { success: false, error: `${response.status} ${response.statusText}`, duration, status: response.status };
+                }
+            } catch (error) {
+                addConsoleLog(`❌ ${description} - Error: ${error.message}`, 'error');
+                return { success: false, error: error.message, duration: 0 };
+            }
+        }
+
+        async function runFullTestSuite() {
+            showLoading(true);
+            showStatus('🚀 بدء تشغيل مجموعة الاختبارات الشاملة...', 'loading');
+            addConsoleLog('🚀 Starting Vercel Test Suite...', 'info');
+            
+            try {
+                const result = await makeAPICall('/api/vercel-test-suite', 'Vercel Test Suite');
+                
+                if (result.success) {
+                    displayTestResults(result.data);
+                    showStatus('✅ تم إكمال جميع الاختبارات بنجاح!', 'success');
+                    addConsoleLog('✅ Test suite completed successfully!', 'success');
+                } else {
+                    showStatus('❌ فشل في تشغيل مجموعة الاختبارات', 'error');
+                    addConsoleLog(`❌ Test suite failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ خطأ في الاتصال بالخادم', 'error');
+                addConsoleLog(`❌ Connection error: ${error.message}`, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        async function testEnvironment() {
+            showLoading(true);
+            showStatus('🔍 فحص متغيرات البيئة...', 'loading');
+            addConsoleLog('🔍 Testing environment variables...', 'info');
+            
+            const result = await makeAPICall('/api/debug/env-check', 'Environment Check');
+            
+            if (result.success) {
+                displayEnvironmentInfo(result.data);
+                showStatus('✅ تم فحص متغيرات البيئة بنجاح', 'success');
+            } else {
+                showStatus('❌ فشل في فحص متغيرات البيئة', 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        async function testAPIs() {
+            showLoading(true);
+            showStatus('🌐 اختبار APIs...', 'loading');
+            addConsoleLog('🌐 Testing API endpoints...', 'info');
+            
+            const endpoints = [
+                { url: '/api/products', name: 'Products API' },
+                { url: '/api/auth/security-status', name: 'Security Status' },
+                { url: '/api/debug/env-check', name: 'Environment Check' }
+            ];
+            
+            const results = [];
+            for (const endpoint of endpoints) {
+                const result = await makeAPICall(endpoint.url, endpoint.name);
+                results.push({
+                    name: endpoint.name,
+                    url: endpoint.url,
+                    ...result
+                });
+            }
+            
+            displayAPIResults(results);
+            showStatus('✅ تم اختبار APIs بنجاح', 'success');
+            showLoading(false);
+        }
+
+        async function testDatabase() {
+            showLoading(true);
+            showStatus('💾 اختبار قاعدة البيانات...', 'loading');
+            addConsoleLog('💾 Testing database connections...', 'info');
+            
+            // Test multiple database-related endpoints
+            const endpoints = [
+                { url: '/api/products', name: 'Products Database' },
+                { url: '/api/comments/high-tech-cutter-plotter', name: 'Comments Database' }
+            ];
+            
+            const results = [];
+            for (const endpoint of endpoints) {
+                const result = await makeAPICall(endpoint.url, endpoint.name);
+                results.push({
+                    name: endpoint.name,
+                    url: endpoint.url,
+                    ...result
+                });
+            }
+            
+            displayAPIResults(results);
+            showStatus('✅ تم اختبار قاعدة البيانات بنجاح', 'success');
+            showLoading(false);
+        }
+
+        function displayTestResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Display environment info
+            if (data.environment) {
+                displayEnvironmentInfo(data);
+            }
+            
+            // Display test suites
+            let html = '';
+            
+            if (data.testSuites && data.testSuites.length > 0) {
+                data.testSuites.forEach(suite => {
+                    html += `
+                        <div class="test-suite">
+                            <div class="suite-header">
+                                <div class="suite-title">${suite.name}</div>
+                                <div class="suite-summary">
+                                    <span class="summary-item passed">✅ ${suite.summary.passed}</span>
+                                    <span class="summary-item failed">❌ ${suite.summary.failed}</span>
+                                    <span class="summary-item warnings">⚠️ ${suite.summary.warnings}</span>
+                                    <span class="summary-item">${suite.summary.duration}ms</span>
+                                </div>
+                            </div>
+                            <div class="test-results">
+                                ${suite.results.map(test => `
+                                    <div class="test-item">
+                                        <div>
+                                            <div class="test-name">${test.name}</div>
+                                            <div class="test-message">${test.message}</div>
+                                        </div>
+                                        <div class="test-status ${test.status}">${getStatusIcon(test.status)} ${test.status}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Overall summary
+            if (data.overallSummary) {
+                html += `
+                    <div class="overall-summary">
+                        <div class="health-score">${data.healthScore}</div>
+                        <div>نقاط الصحة العامة للموقع</div>
+                        <div style="margin-top: 15px;">
+                            ✅ ${data.overallSummary.passed} نجح | 
+                            ❌ ${data.overallSummary.failed} فشل | 
+                            ⚠️ ${data.overallSummary.warnings} تحذير
+                        </div>
+                        <div style="margin-top: 10px; opacity: 0.8;">
+                            المدة الإجمالية: ${data.overallSummary.duration}ms
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Recommendations
+            if (data.recommendations && data.recommendations.length > 0) {
+                html += `
+                    <div class="recommendations">
+                        <h3>📋 التوصيات</h3>
+                        ${data.recommendations.map(rec => `
+                            <div class="recommendation ${getRecommendationType(rec)}">
+                                ${rec}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.remove('hidden');
+        }
+
+        function displayEnvironmentInfo(data) {
+            const envInfo = document.getElementById('environmentInfo');
+            const envDetails = document.getElementById('envDetails');
+            
+            let html = '';
+            
+            if (data.environment) {
+                html += `
+                    <div class="env-item">
+                        <strong>Vercel Environment:</strong>
+                        <span>${data.environment.vercel ? '✅ Yes' : '❌ No'}</span>
+                    </div>
+                    <div class="env-item">
+                        <strong>Environment Type:</strong>
+                        <span>${data.environment.vercelEnv || 'Unknown'}</span>
+                    </div>
+                    <div class="env-item">
+                        <strong>Node Version:</strong>
+                        <span>${data.environment.nodeVersion || 'Unknown'}</span>
+                    </div>
+                    <div class="env-item">
+                        <strong>Region:</strong>
+                        <span>${data.environment.region || 'Unknown'}</span>
+                    </div>
+                `;
+            }
+            
+            if (data.healthScore) {
+                html += `
+                    <div class="env-item">
+                        <strong>Health Score:</strong>
+                        <span style="font-weight: bold; color: ${getHealthColor(data.healthScore)}">${data.healthScore}</span>
+                    </div>
+                `;
+            }
+            
+            envDetails.innerHTML = html;
+            envInfo.classList.remove('hidden');
+        }
+
+        function displayAPIResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `
+                <div class="test-suite">
+                    <div class="suite-header">
+                        <div class="suite-title">API Endpoints Test</div>
+                        <div class="suite-summary">
+                            <span class="summary-item passed">✅ ${results.filter(r => r.success).length}</span>
+                            <span class="summary-item failed">❌ ${results.filter(r => !r.success).length}</span>
+                        </div>
+                    </div>
+                    <div class="test-results">
+                        ${results.map(result => `
+                            <div class="test-item">
+                                <div>
+                                    <div class="test-name">${result.name}</div>
+                                    <div class="test-message">
+                                        ${result.url} - 
+                                        ${result.success ? `Success (${result.duration}ms)` : `Error: ${result.error}`}
+                                    </div>
+                                </div>
+                                <div class="test-status ${result.success ? 'pass' : 'fail'}">
+                                    ${result.success ? '✅ PASS' : '❌ FAIL'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.remove('hidden');
+        }
+
+        function getStatusIcon(status) {
+            switch (status) {
+                case 'pass': return '✅';
+                case 'fail': return '❌';
+                case 'warning': return '⚠️';
+                default: return '❓';
+            }
+        }
+
+        function getRecommendationType(recommendation) {
+            if (recommendation.includes('❌')) return 'error';
+            if (recommendation.includes('⚠️')) return 'warning';
+            if (recommendation.includes('✅') || recommendation.includes('🎉')) return 'success';
+            return 'info';
+        }
+
+        function getHealthColor(healthScore) {
+            const score = parseInt(healthScore);
+            if (score >= 80) return '#28a745';
+            if (score >= 60) return '#ffc107';
+            return '#dc3545';
+        }
+
+        function clearResults() {
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('environmentInfo').classList.add('hidden');
+            document.getElementById('consoleOutput').classList.add('hidden');
+            consoleLines = [];
+            hideStatus();
+            addConsoleLog('🗑️ Results cleared', 'info');
+        }
+
+        // Initialize console
+        addConsoleLog('🚀 Vercel Test Suite initialized', 'success');
+        addConsoleLog('📋 Ready to run tests...', 'info');
+    </script>
+</body>
+</html>
