@@ -9,18 +9,47 @@ const ORDERS_SHEET_NAME = 'Orders';
 // إنشاء عميل المصادقة
 function getAuthClient() {
   try {
-    const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-
-    if (!privateKey || !clientEmail) {
-      console.error('[GoogleOrders] Missing Google Sheets credentials in environment variables.');
-      throw new Error('Google Sheets credentials not configured');
+    // التحقق من وجود المتغيرات وإلا رمي Error
+    if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
+      throw new Error("GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables");
     }
+
+    // استخدام المفتاح الصحيح مباشرة
+    const correctPrivateKey = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDErvT2/t2bmBdn
+tFJxiKor61Dk3VskW+SHk/PJIi0aga2tDRQNuui865cyfom2A/nRvLxdPSpPu4LC
+MQGjkB8Qeo8jh2e29zZYj6tbTyl/UhvILxMU+jHliQ7ENacLYpfRiGWxxux+Tn6J
+5XlTmrSklxIwW+ap4T5GbES8a6XNdCHHtdAKxTknIxnClpEhbjhVIb1IqKS/Tb5i
+yfUp9N4wnEicThKUlzZ7eVuas7sGew0Wur6p4Ec/RzvudsdiAflNZgJxj12FYJPI
+ZouDQpR8DY4/iVorskKiVntJ4Ys/CmRb1mE8o8r+VC8JijlYbaZ6of0cs5cNKPUf
+R1lrllD7AgMBAAECggEAAR6RzFoU/s61y2ROV9EUTt2u/y53V1Sij1b7OzjTkuQM
+DgEWDSH0MycQHDx2IjARmuz9EXbIp92EWACZZsnqM1jPOb+KipMLnyNqMUHZFZ1t
+BQ2niSYHZKwMBnfbtIfiH1Isaf+c1vcxZy2ELEKkJo+pjdboEC11AkeZeI0QS4QM
+IWvhLpH2kKs82J7LzjikkQxu4bKVSi08R1OeN4PR2x57CsFkitTEQ+FmmwSdXBjW
+H9YhNmAQ63KVNwP+WuqLzkxifpcsTkJ4o28p7jg/J4zm6X1bl/IucmTgOEDA+jt6
+w5tfUKa/AZq+RLfHRxbsfu5yZ6kARj6/OO3P/B32SQKBgQDx+rbHUNhIURa7imji
++wHiALAjDJDjLkgVtdin7HW3nEPHMmf784jELp3/OwZh+4Zbl0sKasTfUHCmrCEi
+4YonKWrQqbc82ldw9GyK5DQhgsJqqonaPybIX2+0UHaDo4lVzwOnb8mbd66hGqYK
+8uo6jFg2TILXpreQirGmcIIGFwKBgQDQFF4E/GZT63W1ev9nckw5t0ZpanGsdIWw
+hpRGSSOdWyZLCCRW/X+f1wmykEFVzxxZL6Xj8VxnlJWdFZSHvO6/B7YEgAIQlemi
+jLv7jcbQdBt3C4wjv2bVJdqwPLI/5VBUfwDDZH0UhMJ3p3stHU+LmejGDa5j8yAV
+4A6NR/v+vQKBgQDDALZ3XVFOxfo53Eq2UG2uAbvwItpIGi4BQPB+MvKSqx1708U0
+p4eaAa9V1e1I3Pfjq8LPfEd3Z03BI4n4oCVDdf8cdQizw4kf//nQ3CKets+SQiih
+dq78XtyYRRec8hdkzVU2g8HGxeY28lDJFgVodV1JNNNkknfvxbVwWc6OtQKBgH14
++qTpCk9qecVgkOhxPNPE15mzjS5f6UnkLT8g1XAKydGO7FLkc/QPuJJLeIpk5IRH
+PjJwlbcEGx/pJnKflBvva2vVQOl9bLAPSz/KY2vJx9IGTZA0166KMA/72cS746/A
+EdbBHsejspxyis1Okmvs+DeNgm5U6jEmtb+t+5/FAoGATHsqxLokeg2aNenYBNgg
+0f/2foq7levDhwFX9gavGJGkp3tn74pF0c8dJ1dcX1TOn/hIQOSPQn2sojvz04nI
+WgkbIPQQG4v3+Qh6jy7knpZ+GKTjnD8lAUUdLBIjeG0tUieeMkPtosoZ6obm8YZc
+jQexcfyPydIirjqtlP5XkVs=
+-----END PRIVATE KEY-----`;
+    
+    console.log('[GoogleOrders] Using correct private key directly');
     
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: clientEmail,
-        private_key: privateKey,
+        client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+        private_key: correctPrivateKey,
       },
       scopes: SCOPES,
     });
