@@ -166,10 +166,12 @@ async function getProductsWorksheet() {
   const now = Date.now();
   
   // Return cached worksheet if still valid
-  if (productsWorksheet && (now - productsWorksheetCacheTime) < WORKSHEET_CACHE_DURATION) {
-    console.log('[GoogleSheetsProducts] Using cached worksheet');
-    return productsWorksheet;
-  }
+  // Temporarily disabling cache for debugging timeout issue
+  // if (productsWorksheet && (now - productsWorksheetCacheTime) < WORKSHEET_CACHE_DURATION) {
+  //   console.log('[GoogleSheetsProducts] Using cached worksheet (Cache Temporarily Disabled)');
+  //   return productsWorksheet;
+  // }
+  console.log('[GoogleSheetsProducts] Cache temporarily disabled for debugging. Forcing fresh worksheet load.');
 
   console.log('[GoogleSheetsProducts] Connecting to Google Sheets...');
   console.log('[GoogleSheetsProducts] Sheet ID:', PRODUCTS_SHEET_ID);
