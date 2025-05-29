@@ -452,4 +452,66 @@ export class GoogleSheetsDatabase {
       throw error;
     }
   }
+
+  // Admin authentication methods
+  static async addAdmin(adminData: any): Promise<any> {
+    try {
+      console.log('[GoogleSheets] Adding admin to Google Sheets');
+      
+      // For now, we'll use a simple approach - store admin data in a separate sheet or use environment variables
+      // Since Google Sheets is primarily for comments, we'll simulate admin storage
+      console.log('[GoogleSheets] Admin data stored (simulated):', adminData.email);
+      return adminData;
+    } catch (error) {
+      console.error('[GoogleSheets] Error adding admin:', error);
+      throw error;
+    }
+  }
+
+  static async getAdminByEmail(email: string): Promise<any> {
+    try {
+      console.log(`[GoogleSheets] Getting admin by email: ${email}`);
+      
+      // For simplicity, we'll use environment variables for admin credentials
+      const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+      const adminPassword = process.env.ADMIN_PASSWORD || 'StrongP@ss123';
+      const adminEmail = 'admin@hightech.com';
+      
+      if (email === adminEmail) {
+        // Return a simulated admin object with hashed password
+        // Note: In a real implementation, you'd store this in a separate Google Sheet
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        
+        return {
+          id: 'admin-001',
+          email: adminEmail,
+          username: adminUsername,
+          password: hashedPassword,
+          role: 'admin',
+          createdAt: new Date().toISOString(),
+          lastLogin: null
+        };
+      }
+      
+      console.log(`[GoogleSheets] Admin not found: ${email}`);
+      return null;
+    } catch (error) {
+      console.error('[GoogleSheets] Error getting admin by email:', error);
+      throw error;
+    }
+  }
+
+  static async updateAdminLastLogin(adminId: string): Promise<boolean> {
+    try {
+      console.log(`[GoogleSheets] Updating last login for admin: ${adminId}`);
+      // In a real implementation, you'd update this in Google Sheets
+      // For now, we'll just log it
+      console.log(`[GoogleSheets] Last login updated for admin: ${adminId} at ${new Date().toISOString()}`);
+      return true;
+    } catch (error) {
+      console.error('[GoogleSheets] Error updating admin last login:', error);
+      return false;
+    }
+  }
 }

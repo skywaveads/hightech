@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import dbConnect from '@/lib/dbConnect';
-import Admin from '@/models/Admin';
 import {
   checkUserRateLimit,
   checkIPRateLimit,
@@ -11,24 +8,13 @@ import {
   recordFailedIPAttempt,
   clearUserAttempts,
   generateBrowserFingerprint,
-  validatePasswordStrength,
   logSecurityEvent,
   detectSuspiciousActivity
 } from '@/lib/security';
 
-// المستخدم الافتراضي للطوارئ (في حال فشل الاتصال بقاعدة البيانات)
-const FALLBACK_ADMIN = {
-  id: 'admin123',
-  email: 'admin@hightech.com',
-  password: 'StrongP@ss123'
-};
-
 // المفتاح السري لـ JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
 const TOKEN_EXPIRES = process.env.TOKEN_EXPIRES || '2h';
-
-// وقت المهلة للاتصال بقاعدة البيانات (بالميلي ثانية) - 3 ثواني
-const DB_TIMEOUT = 3000;
 
 // الحصول على IP الحقيقي للمستخدم
 function getClientIP(request: NextRequest): string {
@@ -165,24 +151,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // التحقق من قوة كلمة المرور (للمستخدم الافتراضي فقط)
-    if (email === FALLBACK_ADMIN.email) {
-      const passwordValidation = validatePasswordStrength(password);
-      if (!passwordValidation.isValid && password !== FALLBACK_ADMIN.password) {
-        return NextResponse.json(
-          { 
-            message: 'كلمة المرور ضعيفة',
-            code: 'WEAK_PASSWORD',
-            feedback: passwordValidation.feedback
-          },
-          { status: 400 }
-        );
-      }
-    }
+    // التحقق من بيانات الإدمن من متغيرات البيئة
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminEmail = 'admin@hightech.com';
     
-    // التحقق من المستخدم الافتراضي أولاً
-    if (email === FALLBACK_ADMIN.email && password === FALLBACK_ADMIN.password) {
-      console.log('تم التحقق من المستخدم الافتراضي بنجاح');
+    console.log('🔍 التحقق من بيانات الإدمن...');
+    console.log('📧 البريد المدخل:', email);
+    console.log('👤 اسم المستخدم المطلوب:', adminUsername);
+    
+    // التحقق من صحة بيانات الإدمن
+    if ((email === adminEmail || email === adminUsername) && password === adminPassword) {
+      console.log('✅ تم التحقق من الإدمن بنجاح');
       
       // مسح محاولات المستخدم عند النجاح
       clearUserAttempts(email);
@@ -194,62 +174,16 @@ export async function POST(request: NextRequest) {
         ip: clientIP,
         userAgent,
         timestamp: Date.now(),
-        details: { 
-          loginType: 'fallback_admin',
+        details: {
+          loginType: 'environment_variables',
           responseTime: Date.now() - startTime,
           browserFingerprint
         }
       });
       
-      return generateTokenAndRespond(FALLBACK_ADMIN.id, email, clientIP, userAgent);
-    }
-
-    // التحقق من المستخدم في قاعدة البيانات مع مهلة زمنية
-    try {
-      const admin = await verifyUserWithTimeout(email, password);
-      
-      if (admin) {
-        // مسح محاولات المستخدم عند النجاح
-        clearUserAttempts(email);
-        
-        // تسجيل حدث النجاح
-        logSecurityEvent({
-          type: 'LOGIN_SUCCESS',
-          email,
-          ip: clientIP,
-          userAgent,
-          timestamp: Date.now(),
-          details: { 
-            loginType: 'database',
-            responseTime: Date.now() - startTime,
-            browserFingerprint,
-            userId: admin._id.toString()
-          }
-        });
-        
-        return generateTokenAndRespond(admin._id.toString(), email, clientIP, userAgent);
-      } else {
-        // تسجيل المحاولة الفاشلة
-        recordFailedAttempt(email);
-        recordFailedIPAttempt(clientIP);
-        
-        // تسجيل حدث الفشل
-        logSecurityEvent({
-          type: 'LOGIN_FAILED',
-          email,
-          ip: clientIP,
-          userAgent,
-          timestamp: Date.now(),
-          details: { 
-            reason: 'invalid_credentials',
-            responseTime: Date.now() - startTime
-          }
-        });
-        
-        return unauthorizedResponse(userRateLimit.remainingAttempts - 1);
-      }
-    } catch (dbError) {
-      console.error('خطأ في عملية التحقق:', dbError);
+      return generateTokenAndRespond('admin-001', email, clientIP, userAgent);
+    } else {
+      console.log('❌ بيانات الإدمن غير صحيحة');
       
       // تسجيل المحاولة الفاشلة
       recordFailedAttempt(email);
@@ -262,9 +196,9 @@ export async function POST(request: NextRequest) {
         ip: clientIP,
         userAgent,
         timestamp: Date.now(),
-        details: { 
-          reason: 'database_error',
-          error: dbError instanceof Error ? dbError.message : 'Unknown error'
+        details: {
+          reason: 'invalid_credentials',
+          responseTime: Date.now() - startTime
         }
       });
       
@@ -293,41 +227,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  }
-}
-
-// التحقق من المستخدم مع مهلة زمنية
-async function verifyUserWithTimeout(email: string, password: string) {
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('انتهت مهلة الاتصال بقاعدة البيانات')), DB_TIMEOUT);
-  });
-  
-  const verifyPromise = verifyUser(email, password);
-  
-  try {
-    // @ts-ignore
-    return await Promise.race([verifyPromise, timeoutPromise]);
-  } catch (error) {
-    console.error('خطأ أثناء التحقق من المستخدم مع المهلة الزمنية:', error);
-    return null;
-  }
-}
-
-// التحقق من المستخدم في قاعدة البيانات
-async function verifyUser(email: string, password: string) {
-  try {
-    await dbConnect();
-    
-    const admin = await (Admin as any).findOne({ email });
-    if (!admin) {
-      return null;
-    }
-    
-    const passwordMatch = await bcrypt.compare(password, admin.password);
-    return passwordMatch ? admin : null;
-  } catch (error) {
-    console.error('خطأ في التحقق من المستخدم:', error);
-    return null;
   }
 }
 
