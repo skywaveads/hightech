@@ -6,32 +6,11 @@ import { Product } from '@/types/product';
 import fs from 'fs';
 import path from 'path';
 
-// Google configuration with explicit validation
-if (!process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
-  throw new Error("GOOGLE_SHEETS_PRIVATE_KEY is not defined in environment variables");
-}
-if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
-  throw new Error("GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables");
-}
-
-const GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n');
-const GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-
-
 // Products Google Sheets configuration
 let PRODUCTS_SHEET_ID = process.env.PRODUCTS_SHEET_ID || '1RXql2CacN5haqIEq7DM3ZgSLj8ml_KR8PzRJbjDb-As';
 
 // Google Drive configuration
 let GOOGLE_DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || '1q1tt-HIQOE3gthmNq_Kl1SX1FkuEZ1Si';
-
-// Log configuration status
-if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL) {
-  console.warn('[GoogleProducts] Missing required environment variables:');
-  console.warn('- GOOGLE_SHEETS_PRIVATE_KEY:', !!GOOGLE_SHEETS_PRIVATE_KEY);
-  console.warn('- GOOGLE_SHEETS_CLIENT_EMAIL:', !!GOOGLE_SHEETS_CLIENT_EMAIL);
-} else {
-  console.log('[GoogleProducts] Configuration loaded from environment variables');
-}
 
 // Connection pooling
 let authClient: JWT | null = null;
@@ -39,134 +18,27 @@ let productsWorksheet: any = null;
 let productsWorksheetCacheTime = 0;
 const WORKSHEET_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
-// Enhanced helper function to process private key for different environments with advanced fallbacks
-function processPrivateKey(privateKey: string): string {
-  if (!privateKey) {
-    throw new Error('Private key is missing');
-  }
-
-  console.log('[GoogleProducts] Starting enhanced private key processing...');
-  console.log('[GoogleProducts] Original key length:', privateKey.length);
-  console.log('[GoogleProducts] Original key preview:', privateKey.substring(0, 50) + '...');
-
-  let processedKey = privateKey.trim();
-
-  // Method 1: Remove any extra quotes that might be wrapping the key
-  processedKey = processedKey.replace(/^["']|["']$/g, '');
-
-  // Method 2: Replace escaped newlines
-  processedKey = processedKey.replace(/\\n/g, '\n');
-
-  // Method 3: Try to decode if it looks like URL-encoded
-  if (processedKey.includes('%')) {
-    try {
-      const urlDecoded = decodeURIComponent(processedKey);
-      console.log('[GoogleProducts] URL decode successful');
-      processedKey = urlDecoded;
-    } catch (error) {
-      console.warn('[GoogleProducts] URL decode failed, continuing with original');
-    }
-  }
-
-  // Method 4: If key doesn't have proper headers, it might be base64 encoded
-  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    try {
-      const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
-      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
-        console.log('[GoogleProducts] Base64 decode successful');
-        processedKey = decoded;
-      }
-    } catch (error) {
-      console.warn('[GoogleProducts] Base64 decode failed, using original key format');
-    }
-  }
-
-  // Method 5: Try alternative base64 decoding with padding
-  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    try {
-      // Add padding if missing
-      let paddedKey = processedKey;
-      while (paddedKey.length % 4) {
-        paddedKey += '=';
-      }
-      const decoded = Buffer.from(paddedKey, 'base64').toString('utf8');
-      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
-        console.log('[GoogleProducts] Padded base64 decode successful');
-        processedKey = decoded;
-      }
-    } catch (error) {
-      console.warn('[GoogleProducts] Padded base64 decode failed');
-    }
-  }
-
-  // Method 6: Ensure proper line breaks around headers
-  if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
-    processedKey = processedKey
-      .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
-      .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
-      .replace(/\n\n+/g, '\n');
-  }
-
-  // Method 7: If still no proper headers, try to reconstruct
-  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    const keyContent = processedKey.replace(/\s/g, '');
-    if (keyContent.length > 0) {
-      const formattedKey = `-----BEGIN PRIVATE KEY-----\n${keyContent.match(/.{1,64}/g)?.join('\n') || keyContent}\n-----END PRIVATE KEY-----`;
-      processedKey = formattedKey;
-      console.log('[GoogleProducts] Reconstructed key with headers');
-    }
-  }
-
-  // Method 8: Final cleanup and validation
-  if (processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    const lines = processedKey.split('\n');
-    const cleanLines = lines.map(line => line.trim()).filter(line => line.length > 0);
-    
-    // Ensure first line is the header
-    if (cleanLines[0] !== '-----BEGIN PRIVATE KEY-----') {
-      const headerIndex = cleanLines.findIndex(line => line === '-----BEGIN PRIVATE KEY-----');
-      if (headerIndex > 0) {
-        cleanLines.splice(0, headerIndex);
-      }
-    }
-    
-    // Ensure last line is the footer
-    if (cleanLines[cleanLines.length - 1] !== '-----END PRIVATE KEY-----') {
-      const footerIndex = cleanLines.findIndex(line => line === '-----END PRIVATE KEY-----');
-      if (footerIndex >= 0 && footerIndex < cleanLines.length - 1) {
-        cleanLines.splice(footerIndex + 1);
-      }
-    }
-    
-    processedKey = cleanLines.join('\n');
-    console.log('[GoogleProducts] Final cleanup completed');
-  }
-
-  console.log('[GoogleProducts] Enhanced private key processing completed');
-  console.log('[GoogleProducts] Key has proper headers:', processedKey.includes('-----BEGIN PRIVATE KEY-----'));
-  console.log('[GoogleProducts] Key has proper footer:', processedKey.includes('-----END PRIVATE KEY-----'));
-  console.log('[GoogleProducts] Final key length:', processedKey.length);
-  console.log('[GoogleProducts] Final key preview:', processedKey.substring(0, 100) + '...');
-
-  return processedKey;
-}
-
 // Create reusable auth client
 function getAuthClient(): JWT {
   if (!authClient) {
-    if (!GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_PRIVATE_KEY) {
-      throw new Error('Google credentials not configured');
-    }
-
     try {
-      // Use simple direct processing as suggested
-      const processedPrivateKey = GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n');
-      console.log('[GoogleProducts] Using simple private key processing');
+      // التحقق من وجود المتغيرات وإلا رمي Error
+      if (!process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
+        throw new Error("GOOGLE_SHEETS_PRIVATE_KEY is not defined in environment variables");
+      }
+      if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
+        throw new Error("GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables");
+      }
+
+      // تحويل أي \\n إلى \n ثم تمرير المفتاح إلى google.auth.JWT
+      const processedPrivateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n');
+      
+      console.log('[GoogleProducts] Creating JWT client with simple key processing');
       console.log('[GoogleProducts] Key length after processing:', processedPrivateKey.length);
       console.log('[GoogleProducts] Key has proper headers:', processedPrivateKey.includes('-----BEGIN PRIVATE KEY-----'));
       
       authClient = new JWT({
-        email: GOOGLE_SHEETS_CLIENT_EMAIL,
+        email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
         key: processedPrivateKey,
         scopes: [
           'https://www.googleapis.com/auth/spreadsheets',
@@ -175,7 +47,7 @@ function getAuthClient(): JWT {
         ],
       });
 
-      console.log('[GoogleProducts] JWT client created successfully with simple processing');
+      console.log('[GoogleProducts] JWT client created successfully');
     } catch (error) {
       console.error('[GoogleProducts] Failed to create JWT client:', error);
       throw new Error(`Failed to create Google auth client: ${error instanceof Error ? error.message : 'Unknown error'}`);
