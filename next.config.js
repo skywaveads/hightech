@@ -40,6 +40,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'hightech-eg.net',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.hightech-eg.net',
+        pathname: '/**',
       }
     ],
   },
