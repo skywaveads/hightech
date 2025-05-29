@@ -31,21 +31,84 @@ let productsWorksheet: any = null;
 let productsWorksheetCacheTime = 0;
 const WORKSHEET_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
+// Helper function to process private key for different environments
+function processPrivateKey(privateKey: string): string {
+  if (!privateKey) {
+    throw new Error('Private key is missing');
+  }
+
+  // Try different formats to handle Vercel environment variable issues
+  let processedKey = privateKey;
+
+  // Method 1: Replace escaped newlines
+  processedKey = processedKey.replace(/\\n/g, '\n');
+
+  // Method 2: If key doesn't have proper headers, it might be base64 encoded
+  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    try {
+      // Try to decode as base64
+      const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
+      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
+        processedKey = decoded;
+      }
+    } catch (error) {
+      // If base64 decode fails, continue with original
+      console.warn('[GoogleProducts] Base64 decode failed, using original key format');
+    }
+  }
+
+  // Method 3: Ensure proper line breaks around headers
+  if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
+    // Fix potential formatting issues
+    processedKey = processedKey
+      .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
+      .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
+      .replace(/\n\n+/g, '\n'); // Remove multiple newlines
+  }
+
+  // Method 4: If still no proper headers, try to reconstruct
+  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    // This might be just the key content without headers
+    const keyContent = processedKey.replace(/\s/g, '');
+    if (keyContent.length > 0) {
+      // Try to add headers and format properly
+      const formattedKey = `-----BEGIN PRIVATE KEY-----\n${keyContent.match(/.{1,64}/g)?.join('\n') || keyContent}\n-----END PRIVATE KEY-----`;
+      processedKey = formattedKey;
+    }
+  }
+
+  console.log('[GoogleProducts] Private key processing completed');
+  console.log('[GoogleProducts] Key has proper headers:', processedKey.includes('-----BEGIN PRIVATE KEY-----'));
+  console.log('[GoogleProducts] Key length:', processedKey.length);
+
+  return processedKey;
+}
+
 // Create reusable auth client
 function getAuthClient(): JWT {
   if (!authClient) {
     if (!GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_PRIVATE_KEY) {
       throw new Error('Google credentials not configured');
     }
-    authClient = new JWT({
-      email: GOOGLE_SHEETS_CLIENT_EMAIL,
-      key: GOOGLE_SHEETS_PRIVATE_KEY,
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/drive'
-      ],
-    });
+
+    try {
+      const processedPrivateKey = processPrivateKey(GOOGLE_SHEETS_PRIVATE_KEY);
+      
+      authClient = new JWT({
+        email: GOOGLE_SHEETS_CLIENT_EMAIL,
+        key: processedPrivateKey,
+        scopes: [
+          'https://www.googleapis.com/auth/spreadsheets',
+          'https://www.googleapis.com/auth/drive.file',
+          'https://www.googleapis.com/auth/drive'
+        ],
+      });
+
+      console.log('[GoogleProducts] JWT client created successfully');
+    } catch (error) {
+      console.error('[GoogleProducts] Failed to create JWT client:', error);
+      throw new Error(`Failed to create Google auth client: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
   return authClient;
 }

@@ -111,25 +111,70 @@ export async function GET(request: NextRequest) {
 
   diagnostics.tests.push(credentialsTest);
 
-  // Test 4: JWT Authentication
+  // Test 4: JWT Authentication with Enhanced Private Key Processing
   const authTest = {
-    name: 'JWT Authentication',
+    name: 'JWT Authentication with Enhanced Private Key Processing',
     status: 'unknown',
     details: {} as any
   };
 
   try {
     const { JWT } = await import('google-auth-library');
-    const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const rawPrivateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
     
-    if (!privateKey || !clientEmail) {
+    if (!rawPrivateKey || !clientEmail) {
       authTest.status = 'fail';
       authTest.details = { error: 'Missing credentials for JWT' };
     } else {
+      // Use the same private key processing logic as the main implementation
+      function processPrivateKey(privateKey: string): string {
+        if (!privateKey) {
+          throw new Error('Private key is missing');
+        }
+
+        let processedKey = privateKey;
+
+        // Method 1: Replace escaped newlines
+        processedKey = processedKey.replace(/\\n/g, '\n');
+
+        // Method 2: If key doesn't have proper headers, it might be base64 encoded
+        if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+          try {
+            const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
+            if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
+              processedKey = decoded;
+            }
+          } catch (error) {
+            // Continue with original
+          }
+        }
+
+        // Method 3: Ensure proper line breaks around headers
+        if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
+          processedKey = processedKey
+            .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
+            .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
+            .replace(/\n\n+/g, '\n');
+        }
+
+        // Method 4: If still no proper headers, try to reconstruct
+        if (!processedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+          const keyContent = processedKey.replace(/\s/g, '');
+          if (keyContent.length > 0) {
+            const formattedKey = `-----BEGIN PRIVATE KEY-----\n${keyContent.match(/.{1,64}/g)?.join('\n') || keyContent}\n-----END PRIVATE KEY-----`;
+            processedKey = formattedKey;
+          }
+        }
+
+        return processedKey;
+      }
+
+      const processedPrivateKey = processPrivateKey(rawPrivateKey);
+      
       const authClient = new JWT({
         email: clientEmail,
-        key: privateKey,
+        key: processedPrivateKey,
         scopes: [
           'https://www.googleapis.com/auth/spreadsheets',
           'https://www.googleapis.com/auth/drive.file',
@@ -144,7 +189,13 @@ export async function GET(request: NextRequest) {
       authTest.details = {
         email: authClient.email,
         scopes: authClient.scopes,
-        authenticated: true
+        authenticated: true,
+        keyProcessing: {
+          originalLength: rawPrivateKey.length,
+          processedLength: processedPrivateKey.length,
+          hasHeaders: processedPrivateKey.includes('-----BEGIN PRIVATE KEY-----'),
+          processingApplied: rawPrivateKey !== processedPrivateKey
+        }
       };
     }
   } catch (error) {
