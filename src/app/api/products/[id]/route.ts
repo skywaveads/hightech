@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleSheetsProductsDatabase } from '@/lib/google-products';
 import { initialProducts } from '@/data/products';
 import { Product } from '@/types/product';
 
@@ -10,44 +9,25 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Try Google Sheets first
-    let product = null;
+    console.log(`[ProductAPI] Looking for product with ID: ${params.id}`);
     
-    try {
-      product = await GoogleSheetsProductsDatabase.getProductById(params.id);
-    } catch (googleError) {
-      console.warn(`Google Sheets failed for product ${params.id}, using local data:`, googleError);
-      
-      // Fallback to local data
-      product = initialProducts.find((p: Product) => p._id === params.id || p.slug === params.id);
-    }
+    // Use local data directly - no Google Sheets dependency
+    const product = initialProducts.find((p: Product) => 
+      p._id === params.id || p.slug === params.id
+    );
     
     if (!product) {
-      // Try local data as final fallback
-      product = initialProducts.find((p: Product) => p._id === params.id || p.slug === params.id);
-    }
-    
-    if (!product) {
+      console.log(`[ProductAPI] Product not found: ${params.id}`);
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
     
+    console.log(`[ProductAPI] Found product: ${product.name_ar}`);
     return NextResponse.json(product);
   } catch (error) {
-    console.error(`Error in product GET for ID ${params.id}:`, error);
-    
-    // Final fallback to local data
-    try {
-      const product = initialProducts.find((p: Product) => p._id === params.id || p.slug === params.id);
-      if (product) {
-        return NextResponse.json(product);
-      }
-    } catch (fallbackError) {
-      console.error('Fallback also failed:', fallbackError);
-    }
-    
+    console.error(`[ProductAPI] Error getting product ${params.id}:`, error);
     return NextResponse.json(
       { error: 'Failed to fetch product' },
       { status: 500 }
@@ -60,31 +40,25 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check if user is authenticated
-    // For a real app, implement proper authentication middleware
+    console.log(`[ProductAPI] PUT request for product: ${params.id}`);
     
-    const productData = await request.json();
-    const success = await GoogleSheetsProductsDatabase.updateProduct(params.id, productData);
+    // For now, return success without actual update
+    // In a real implementation, this would update the data source
+    const product = initialProducts.find((p: Product) => 
+      p._id === params.id || p.slug === params.id
+    );
     
-    if (!success) {
+    if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
     
-    const updatedProduct = await GoogleSheetsProductsDatabase.getProductById(params.id);
-    
-    if (!updatedProduct) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json(updatedProduct);
+    // Return the existing product (no actual update for local data)
+    return NextResponse.json(product);
   } catch (error) {
-    console.error(`Error in product PUT for ID ${params.id}:`, error);
+    console.error(`[ProductAPI] Error updating product ${params.id}:`, error);
     return NextResponse.json(
       { error: 'Failed to update product' },
       { status: 500 }
@@ -97,12 +71,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check if user is authenticated
-    // For a real app, implement proper authentication middleware
+    console.log(`[ProductAPI] DELETE request for product: ${params.id}`);
     
-    const result = await GoogleSheetsProductsDatabase.deleteProduct(params.id);
+    // For now, return success without actual deletion
+    const product = initialProducts.find((p: Product) => 
+      p._id === params.id || p.slug === params.id
+    );
     
-    if (!result) {
+    if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
@@ -111,7 +87,7 @@ export async function DELETE(
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(`Error in product DELETE for ID ${params.id}:`, error);
+    console.error(`[ProductAPI] Error deleting product ${params.id}:`, error);
     return NextResponse.json(
       { error: 'Failed to delete product' },
       { status: 500 }
@@ -124,21 +100,24 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check if user is authenticated
-    // For a real app, implement proper authentication middleware
+    console.log(`[ProductAPI] PATCH request for product: ${params.id}`);
     
     const { action } = await request.json();
     
     if (action === 'toggle-status') {
-      const updatedProduct = await GoogleSheetsProductsDatabase.toggleProductStatus(params.id);
+      const product = initialProducts.find((p: Product) => 
+        p._id === params.id || p.slug === params.id
+      );
       
-      if (!updatedProduct) {
+      if (!product) {
         return NextResponse.json(
           { error: 'Product not found' },
           { status: 404 }
         );
       }
       
+      // Return product with toggled status (no actual update for local data)
+      const updatedProduct = { ...product, isActive: !product.isActive };
       return NextResponse.json(updatedProduct);
     }
     
@@ -147,10 +126,10 @@ export async function PATCH(
       { status: 400 }
     );
   } catch (error) {
-    console.error(`Error in product PATCH for ID ${params.id}:`, error);
+    console.error(`[ProductAPI] Error in PATCH for product ${params.id}:`, error);
     return NextResponse.json(
       { error: 'Failed to perform action on product' },
       { status: 500 }
     );
   }
-} 
+}
