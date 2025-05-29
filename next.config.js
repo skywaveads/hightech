@@ -216,13 +216,16 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
 
-  // تحسين الخرج
-  output: 'standalone',
-  
   // ضغط إضافي
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  
+  // إعدادات الملفات الثابتة
+  trailingSlash: false,
+  
+  // تحسين الأصول الثابتة
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
 };
 
 module.exports = nextConfig;
