@@ -6,9 +6,16 @@ import { Product } from '@/types/product';
 import fs from 'fs';
 import path from 'path';
 
-// Google configuration
-let GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n');
-let GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+// Google configuration with explicit validation
+if (!process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
+  throw new Error("GOOGLE_SHEETS_PRIVATE_KEY is not defined in environment variables");
+}
+if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
+  throw new Error("GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables");
+}
+
+const GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n');
+const GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
 
 
 // Products Google Sheets configuration

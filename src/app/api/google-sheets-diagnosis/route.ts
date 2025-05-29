@@ -176,17 +176,24 @@ export async function GET(request: NextRequest) {
   };
 
   try {
-    const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
-    const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-
-    if (!privateKey || !clientEmail) {
+    // Use explicit validation like in main file
+    if (!process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
       credentialsTest.status = 'fail';
       credentialsTest.details = {
-        error: 'Missing credentials',
-        privateKey: !!privateKey,
-        clientEmail: !!clientEmail
+        error: 'GOOGLE_SHEETS_PRIVATE_KEY is not defined in environment variables',
+        privateKey: false,
+        clientEmail: !!process.env.GOOGLE_SHEETS_CLIENT_EMAIL
+      };
+    } else if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
+      credentialsTest.status = 'fail';
+      credentialsTest.details = {
+        error: 'GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables',
+        privateKey: true,
+        clientEmail: false
       };
     } else {
+      const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
+      const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
       // Check private key format
       const keyFormatValid = privateKey.includes('-----BEGIN PRIVATE KEY-----') &&
                            privateKey.includes('-----END PRIVATE KEY-----');
