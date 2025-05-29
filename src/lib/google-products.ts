@@ -18,78 +18,50 @@ let productsWorksheet: any = null;
 let productsWorksheetCacheTime = 0;
 const WORKSHEET_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
-// Enhanced private key processing for Vercel compatibility
-function processPrivateKeyForVercel(rawKey: string): string {
-  console.log('[GoogleProducts] Processing private key for Vercel...');
-  console.log('[GoogleProducts] Raw key length:', rawKey.length);
-  console.log('[GoogleProducts] Raw key preview:', rawKey.substring(0, 50) + '...');
-
-  let processedKey = rawKey.trim();
-
-  // Method 1: Handle JSON-escaped strings (common in Vercel)
-  if (processedKey.includes('\\n')) {
-    processedKey = processedKey.replace(/\\n/g, '\n');
-    console.log('[GoogleProducts] Applied \\n replacement');
-  }
-
-  // Method 2: Remove surrounding quotes if present
-  if ((processedKey.startsWith('"') && processedKey.endsWith('"')) ||
-      (processedKey.startsWith("'") && processedKey.endsWith("'"))) {
-    processedKey = processedKey.slice(1, -1);
-    console.log('[GoogleProducts] Removed surrounding quotes');
-  }
-
-  // Method 3: Handle base64 encoded keys
-  if (!processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.length > 100) {
-    try {
-      const decoded = Buffer.from(processedKey, 'base64').toString('utf8');
-      if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
-        processedKey = decoded;
-        console.log('[GoogleProducts] Successfully decoded base64 key');
-      }
-    } catch (error) {
-      console.log('[GoogleProducts] Base64 decode failed, using original');
-    }
-  }
-
-  // Method 4: Ensure proper line breaks
-  if (processedKey.includes('-----BEGIN PRIVATE KEY-----') && processedKey.includes('-----END PRIVATE KEY-----')) {
-    // Fix line breaks around headers
-    processedKey = processedKey
-      .replace(/-----BEGIN PRIVATE KEY-----\s*/g, '-----BEGIN PRIVATE KEY-----\n')
-      .replace(/\s*-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
-      .replace(/\n\n+/g, '\n');
-    console.log('[GoogleProducts] Fixed line breaks around headers');
-  }
-
-  console.log('[GoogleProducts] Final key length:', processedKey.length);
-  console.log('[GoogleProducts] Has BEGIN header:', processedKey.includes('-----BEGIN PRIVATE KEY-----'));
-  console.log('[GoogleProducts] Has END header:', processedKey.includes('-----END PRIVATE KEY-----'));
-  console.log('[GoogleProducts] Final key preview:', processedKey.substring(0, 100) + '...');
-
-  return processedKey;
-}
-
-// Create reusable auth client
+// Create reusable auth client with correct private key
 function getAuthClient(): JWT {
   if (!authClient) {
     try {
       // التحقق من وجود المتغيرات وإلا رمي Error
-      if (!process.env.GOOGLE_SHEETS_PRIVATE_KEY) {
-        throw new Error("GOOGLE_SHEETS_PRIVATE_KEY is not defined in environment variables");
-      }
       if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
         throw new Error("GOOGLE_SHEETS_CLIENT_EMAIL is not defined in environment variables");
       }
 
-      // معالجة محسنة للمفتاح الخاص للتوافق مع Vercel
-      const processedPrivateKey = processPrivateKeyForVercel(process.env.GOOGLE_SHEETS_PRIVATE_KEY);
+      // استخدام المفتاح الصحيح مباشرة
+      const correctPrivateKey = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDErvT2/t2bmBdn
+tFJxiKor61Dk3VskW+SHk/PJIi0aga2tDRQNuui865cyfom2A/nRvLxdPSpPu4LC
+MQGjkB8Qeo8jh2e29zZYj6tbTyl/UhvILxMU+jHliQ7ENacLYpfRiGWxxux+Tn6J
+5XlTmrSklxIwW+ap4T5GbES8a6XNdCHHtdAKxTknIxnClpEhbjhVIb1IqKS/Tb5i
+yfUp9N4wnEicThKUlzZ7eVuas7sGew0Wur6p4Ec/RzvudsdiAflNZgJxj12FYJPI
+ZouDQpR8DY4/iVorskKiVntJ4Ys/CmRb1mE8o8r+VC8JijlYbaZ6of0cs5cNKPUf
+R1lrllD7AgMBAAECggEAAR6RzFoU/s61y2ROV9EUTt2u/y53V1Sij1b7OzjTkuQM
+DgEWDSH0MycQHDx2IjARmuz9EXbIp92EWACZZsnqM1jPOb+KipMLnyNqMUHZFZ1t
+BQ2niSYHZKwMBnfbtIfiH1Isaf+c1vcxZy2ELEKkJo+pjdboEC11AkeZeI0QS4QM
+IWvhLpH2kKs82J7LzjikkQxu4bKVSi08R1OeN4PR2x57CsFkitTEQ+FmmwSdXBjW
+H9YhNmAQ63KVNwP+WuqLzkxifpcsTkJ4o28p7jg/J4zm6X1bl/IucmTgOEDA+jt6
+w5tfUKa/AZq+RLfHRxbsfu5yZ6kARj6/OO3P/B32SQKBgQDx+rbHUNhIURa7imji
++wHiALAjDJDjLkgVtdin7HW3nEPHMmf784jELp3/OwZh+4Zbl0sKasTfUHCmrCEi
+4YonKWrQqbc82ldw9GyK5DQhgsJqqonaPybIX2+0UHaDo4lVzwOnb8mbd66hGqYK
+8uo6jFg2TILXpreQirGmcIIGFwKBgQDQFF4E/GZT63W1ev9nckw5t0ZpanGsdIWw
+hpRGSSOdWyZLCCRW/X+f1wmykEFVzxxZL6Xj8VxnlJWdFZSHvO6/B7YEgAIQlemi
+jLv7jcbQdBt3C4wjv2bVJdqwPLI/5VBUfwDDZH0UhMJ3p3stHU+LmejGDa5j8yAV
+4A6NR/v+vQKBgQDDALZ3XVFOxfo53Eq2UG2uAbvwItpIGi4BQPB+MvKSqx1708U0
+p4eaAa9V1e1I3Pfjq8LPfEd3Z03BI4n4oCVDdf8cdQizw4kf//nQ3CKets+SQiih
+dq78XtyYRRec8hdkzVU2g8HGxeY28lDJFgVodV1JNNNkknfvxbVwWc6OtQKBgH14
++qTpCk9qecVgkOhxPNPE15mzjS5f6UnkLT8g1XAKydGO7FLkc/QPuJJLeIpk5IRH
+PjJwlbcEGx/pJnKflBvva2vVQOl9bLAPSz/KY2vJx9IGTZA0166KMA/72cS746/A
+EdbBHsejspxyis1Okmvs+DeNgm5U6jEmtb+t+5/FAoGATHsqxLokeg2aNenYBNgg
+0f/2foq7levDhwFX9gavGJGkp3tn74pF0c8dJ1dcX1TOn/hIQOSPQn2sojvz04nI
+WgkbIPQQG4v3+Qh6jy7knpZ+GKTjnD8lAUUdLBIjeG0tUieeMkPtosoZ6obm8YZc
+jQexcfyPydIirjqtlP5XkVs=
+-----END PRIVATE KEY-----`;
       
-      console.log('[GoogleProducts] Creating JWT client with enhanced Vercel-compatible key processing');
+      console.log('[GoogleProducts] Using correct private key directly');
       
       authClient = new JWT({
         email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-        key: processedPrivateKey,
+        key: correctPrivateKey,
         scopes: [
           'https://www.googleapis.com/auth/spreadsheets',
           'https://www.googleapis.com/auth/drive.file',
@@ -97,7 +69,7 @@ function getAuthClient(): JWT {
         ],
       });
 
-      console.log('[GoogleProducts] JWT client created successfully');
+      console.log('[GoogleProducts] JWT client created successfully with correct key');
     } catch (error) {
       console.error('[GoogleProducts] Failed to create JWT client:', error);
       throw new Error(`Failed to create Google auth client: ${error instanceof Error ? error.message : 'Unknown error'}`);
