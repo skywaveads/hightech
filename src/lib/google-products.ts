@@ -340,7 +340,7 @@ export class GoogleSheetsProductsDatabase {
       console.log(`[GoogleSheetsProducts] Found ${rows.length} rows in sheet`);
       
       // Debug: log first row data
-      if (rows.length > 0) {
+      if (rows.length > 0 && rows[0]) {
         console.log('[GoogleSheetsProducts] First row data:', {
           _id: rows[0].get('_id'),
           name_ar: rows[0].get('name_ar'),
