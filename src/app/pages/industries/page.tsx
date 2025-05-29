@@ -15,7 +15,7 @@ const industries = [
     id: 'signmaking',
     title: 'صناعة اللافتات والإعلانات',
     description: 'أجهزة كتر بلوتر هي الحل الأمثل لشركات الدعاية والإعلان لإنتاج لافتات واستيكرات عالية الجودة بسرعة ودقة',
-    image: '/images/industries/signmaking.jpg',
+    image: '/images/industries/stickers.jpg',
     benefits: [
       'قص الفينيل والملصقات بدقة متناهية',
       'إنتاج لافتات بأحجام مختلفة',
@@ -33,7 +33,7 @@ const industries = [
     id: 'apparel',
     title: 'صناعة الملابس والأزياء',
     description: 'توفر أجهزة كتر بلوتر الدقة والسرعة اللازمة لقص الأقمشة ونقل التصاميم على التيشيرتات والملابس الرياضية',
-    image: '/images/industries/apparel.jpg',
+    image: '/images/industries/print_shirts.jpg',
     benefits: [
       'قص الفينيل الحراري بدقة عالية',
       'تصميم وقص الطباعة على التيشيرتات',
@@ -51,7 +51,7 @@ const industries = [
     id: 'packaging',
     title: 'التعبئة والتغليف',
     description: 'أجهزة كتر بلوتر هي الأداة المثالية لإنتاج نماذج التعبئة والتغليف وقص الكرتون والورق المقوى بدقة',
-    image: '/images/industries/packaging.jpg',
+    image: '/images/industries/banner.png',
     benefits: [
       'تصميم وقص عبوات مخصصة',
       'إنتاج صناديق ومغلفات بأشكال مبتكرة',
@@ -69,7 +69,7 @@ const industries = [
     id: 'printing',
     title: 'صناعة الطباعة',
     description: 'تعزز أجهزة كتر بلوتر قدرات المطابع من خلال توفير حلول دقيقة لقص المطبوعات والتصميمات بعد الطباعة',
-    image: '/images/industries/printing.jpg',
+    image: '/images/industries/car_films.png',
     benefits: [
       'قص المطبوعات بعد الطباعة الرقمية',
       'تشطيب دقيق للكروت والمنشورات',

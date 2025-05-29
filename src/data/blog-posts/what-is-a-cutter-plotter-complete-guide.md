@@ -5,7 +5,7 @@ description: "A comprehensive guide to understanding vinyl cutting technology, f
 descriptionAr: "دليل شامل لفهم تقنية قص الفينيل، والميزات التي يجب البحث عنها، وكيفية اختيار أفضل كتر بلوتر لاحتياجاتك في عام 2025"
 publishedAt: "2025-05-01T10:00:00Z"
 updatedAt: "2025-05-03T12:30:00Z"
-coverImage: "/public/images/blog/what_is_a_cutter_plotter_complete_guide.png"
+coverImage: "/images/blog/what_is_a_cutter_plotter_complete_guide.png"
 authorId: "admin"
 tags: ["cutter plotter", "vinyl cutter", "vinyl cutting", "sign making", "digital cutting", "equipment guide", "2025 technology"]
 tagsAr: ["كتر بلوتر", "قاطع فينيل", "قص الفينيل", "صناعة اللافتات", "القص الرقمي", "دليل المعدات", "تكنولوجيا 2025"]
