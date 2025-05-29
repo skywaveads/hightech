@@ -80,7 +80,6 @@ const VideoDemo: React.FC = () => {
             }`}
             frameBorder="0"
             allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
             title="فيديو توضيحي لجهاز كتر بلوتر هاي كت"
             loading="lazy"
             style={{ border: 'none' }}

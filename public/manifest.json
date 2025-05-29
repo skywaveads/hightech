@@ -9,9 +9,9 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/images/logo.png",
+      "src": "/images/placeholder.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     }
   ],
@@ -36,7 +36,7 @@
       "url": "/products",
       "icons": [
         {
-          "src": "/images/logo.png",
+          "src": "/images/placeholder.jpg",
           "sizes": "192x192"
         }
       ]
@@ -48,7 +48,7 @@
       "url": "/contact",
       "icons": [
         {
-          "src": "/images/logo.png",
+          "src": "/images/placeholder.jpg",
           "sizes": "192x192"
         }
       ]
