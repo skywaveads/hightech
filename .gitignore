@@ -27,6 +27,23 @@ pnpm-debug.log*
 .env*.local
 .env
 
+# Google Service Account (sensitive)
+google-service-account.json
+
+# Vercel Environment Variables (sensitive)
+vercel-env-variables.txt
+
+# Test files and scripts
+test-*.js
+*-test.js
+seed-*.js
+reset-*.js
+add-*.js
+update-*.js
+
+# Data files
+data/comments.json
+
 # TypeScript cache
 *.tsbuildinfo
 

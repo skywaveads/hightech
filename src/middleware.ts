@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken'; // استيراد المكتبة
+
+// المفتاح السري لـ JWT من متغيرات البيئة
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // المسارات المحمية
 const protectedPaths = [
@@ -17,19 +21,18 @@ const publicPaths = [
   '/api/auth/security-status'
 ];
 
-// التحقق من صحة الرمز - نسخة مبسطة للـ Edge Runtime
-function verifyTokenSimple(token: string): any {
+// التحقق من صحة الرمز مع التحقق من التوقيع
+function verifyToken(token: string): any {
+  if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not defined in environment variables for middleware.');
+    return null; // لا يمكن التحقق بدون مفتاح سري
+  }
   try {
-    // فك تشفير JWT بسيط (بدون التحقق من التوقيع في middleware)
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    
-    const payloadPart = parts[1];
-    if (!payloadPart) return null;
-    
-    const payload = JSON.parse(atob(payloadPart));
-    return payload;
+    // التحقق من التوقيع وفك التشفير
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded;
   } catch (error) {
+    console.error('Error verifying token in middleware:', error);
     return null;
   }
 }
@@ -80,7 +83,7 @@ export function middleware(request: NextRequest) {
     }
     
     // التحقق من صحة الرمز
-    const decoded = verifyTokenSimple(token);
+    const decoded = verifyToken(token); // استخدام الدالة الجديدة
     
     if (!decoded) {
       // رمز غير صالح - إعادة توجيه لصفحة تسجيل الدخول

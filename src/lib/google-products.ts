@@ -2,6 +2,8 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 import { Product } from '@/types/product';
+import fs from 'fs';
+import path from 'path';
 
 // Google configuration
 let GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
@@ -18,8 +20,6 @@ if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL) {
   console.warn('[GoogleProducts] Missing required environment variables:');
   console.warn('- GOOGLE_SHEETS_PRIVATE_KEY:', !!GOOGLE_SHEETS_PRIVATE_KEY);
   console.warn('- GOOGLE_SHEETS_CLIENT_EMAIL:', !!GOOGLE_SHEETS_CLIENT_EMAIL);
-  console.warn('- PRODUCTS_SHEET_ID:', !!PRODUCTS_SHEET_ID);
-  console.warn('- GOOGLE_DRIVE_FOLDER_ID:', !!GOOGLE_DRIVE_FOLDER_ID);
 } else {
   console.log('[GoogleProducts] Configuration loaded from environment variables');
 }
