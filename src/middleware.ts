@@ -39,7 +39,7 @@ function verifyToken(token: string): any {
   try {
     // Split the token into parts
     const parts = token.split('.');
-    if (parts.length !== 3) {
+    if (parts.length !== 3 || !parts[1]) {
       return null;
     }
 
