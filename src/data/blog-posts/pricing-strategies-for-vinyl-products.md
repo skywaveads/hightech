@@ -5,7 +5,7 @@ description: "Expert guide on developing effective pricing strategies for vinyl-
 descriptionAr: "دليل احترافي لتطوير استراتيجيات تسعير فعالة للمنتجات المقصوصة بالفينيل لتعظيم الربحية في أعمال الطباعة حسب الطلب في 2025"
 publishedAt: "2025-05-15T10:00:00Z"
 updatedAt: "2025-05-17T14:30:00Z"
-coverImage: "/public/images/blog/pricing_strategies_for_vinyl_products.png"
+coverImage: "/images/blog/pricing_strategies_for_vinyl_products.png"
 authorId: "admin"
 tags: ["vinyl products", "pricing strategy", "print on demand", "profit maximization", "cutter plotter", "custom products", "business"]
 tagsAr: ["منتجات الفينيل", "استراتيجية التسعير", "الطباعة حسب الطلب", "تعظيم الأرباح", "كتر بلوتر", "منتجات مخصصة", "أعمال"]
