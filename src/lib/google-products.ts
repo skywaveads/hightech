@@ -10,6 +10,7 @@ import path from 'path';
 let GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
 let GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
 
+
 // Products Google Sheets configuration
 let PRODUCTS_SHEET_ID = process.env.PRODUCTS_SHEET_ID || '1RXql2CacN5haqIEq7DM3ZgSLj8ml_KR8PzRJbjDb-As';
 
