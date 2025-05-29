@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSheetsProductsDatabase } from '@/lib/google-products';
 import { Product } from '@/types/product';
-import { initialProducts } from '@/data/products';
 
 export const dynamic = 'force-dynamic';
 
-// Simple in-memory cache with shorter duration for faster updates
-let cachedProducts: Product[] | null = null;
-let cacheTimestamp: number = 0;
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes for faster refresh
-
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔄 Products API called - using Google Sheets only');
+    
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -20,96 +16,60 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
 
-    let products: Product[];
+    console.log('📋 Query params:', { category, active, search, limit });
 
-    // Check cache first
-    const now = Date.now();
-    if (cachedProducts && (now - cacheTimestamp) < CACHE_DURATION) {
-      products = cachedProducts;
-    } else {
-      try {
-        // Try to get from Google Sheets
-        products = await GoogleSheetsProductsDatabase.getAllProducts();
-        
-        // Update cache
-        cachedProducts = products;
-        cacheTimestamp = now;
-      } catch (sheetsError) {
-        console.warn('Google Sheets failed, using fallback data:', sheetsError);
-        
-        // Use fallback data if Google Sheets fails
-        products = initialProducts;
-        
-        // Don't cache fallback data to allow retry
-      }
-    }
+    // Get products from Google Sheets only
+    console.log('📊 Fetching products from Google Sheets...');
+    const products = await GoogleSheetsProductsDatabase.getAllProducts();
+    console.log(`📦 Retrieved ${products.length} products from Google Sheets`);
 
     // Apply filters if provided
+    let filteredProducts = products;
+
     if (category) {
-      products = products.filter(product => product.category === category);
+      filteredProducts = filteredProducts.filter(product => product.category === category);
+      console.log(`🏷️ Filtered by category '${category}': ${filteredProducts.length} products`);
     }
 
     if (active !== null) {
       const isActive = active === 'true';
-      products = products.filter(product => product.isActive === isActive);
+      filteredProducts = filteredProducts.filter(product => product.isActive === isActive);
+      console.log(`✅ Filtered by active status '${isActive}': ${filteredProducts.length} products`);
     }
 
     if (search) {
       const searchLower = search.toLowerCase();
-      products = products.filter(
+      filteredProducts = filteredProducts.filter(
         product =>
           product.name_ar.toLowerCase().includes(searchLower) ||
           product.name_en.toLowerCase().includes(searchLower) ||
           product.sku.toLowerCase().includes(searchLower) ||
           product.tags.some((tag: string) => tag.toLowerCase().includes(searchLower))
       );
+      console.log(`🔍 Filtered by search '${search}': ${filteredProducts.length} products`);
     }
 
     // Apply limit if provided
     if (limit && !isNaN(limit)) {
-      products = products.slice(0, limit);
+      filteredProducts = filteredProducts.slice(0, limit);
+      console.log(`📏 Limited to ${limit}: ${filteredProducts.length} products`);
     }
 
-    return NextResponse.json(products);
+    console.log(`✅ Returning ${filteredProducts.length} products from Google Sheets`);
+    return NextResponse.json(filteredProducts);
+    
   } catch (error) {
-    console.error('Error in products GET:', error);
+    console.error('❌ Error in products GET:', error);
     
-    // Return fallback data even on error
-    let fallbackProducts = initialProducts;
-    
-    // Apply same filters to fallback data
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const active = searchParams.get('isActive');
-    const search = searchParams.get('search');
-    const limitParam = searchParams.get('limit');
-    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
-
-    if (category) {
-      fallbackProducts = fallbackProducts.filter(product => product.category === category);
-    }
-
-    if (active !== null) {
-      const isActive = active === 'true';
-      fallbackProducts = fallbackProducts.filter(product => product.isActive === isActive);
-    }
-
-    if (search) {
-      const searchLower = search.toLowerCase();
-      fallbackProducts = fallbackProducts.filter(
-        product =>
-          product.name_ar.toLowerCase().includes(searchLower) ||
-          product.name_en.toLowerCase().includes(searchLower) ||
-          product.sku.toLowerCase().includes(searchLower) ||
-          product.tags.some((tag: string) => tag.toLowerCase().includes(searchLower))
-      );
-    }
-
-    if (limit && !isNaN(limit)) {
-      fallbackProducts = fallbackProducts.slice(0, limit);
-    }
-
-    return NextResponse.json(fallbackProducts);
+    // Return error instead of fallback data
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch products from Google Sheets',
+        message: 'تعذر جلب البيانات من Google Sheets',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
   }
 }
 
