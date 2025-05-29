@@ -19,7 +19,7 @@ const HeroSection: React.FC = () => {
       
       {/* Image Overlay (semi-transparent) */}
       <div className="absolute inset-0 opacity-10">
-        <Image 
+        <Image
           src="/images/industries/banner.png"
           alt="أجهزة كتر بلوتر لمختلف الصناعات"
           fill

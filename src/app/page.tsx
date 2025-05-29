@@ -150,7 +150,7 @@ const testimonials = [
     text: 'جهاز كتر بلوتر هاي كت غير طريقة عملنا للأفضل. سرعة قص عالية مع دقة لا مثيل لها، وفر علينا الكثير من الوقت والخامات.',
     name: 'أحمد محمود',
     company: 'شركة سكاي للإعلانات',
-    image: '/images/author/Mohamed_Saleh.png',
+    image: '/images/testimonials/ahmed.jpg',
     rating: 5
   },
   {
@@ -158,7 +158,7 @@ const testimonials = [
     text: 'الدعم الفني المتميز من فريق هاي تكنولوجي مصر كان سببًا رئيسيًا في اختيارنا لهم. الجهاز يعمل بكفاءة عالية منذ سنوات.',
     name: 'محمد علي',
     company: 'ستايل برينت للدعاية',
-    image: '/images/author/Sara_ElSayed.png',
+    image: '/images/testimonials/mohamed.jpg',
     rating: 5
   },
   {
@@ -166,7 +166,7 @@ const testimonials = [
     text: 'الآن نستطيع تنفيذ تصميمات معقدة بدقة متناهية وفي وقت قياسي. جهاز هاي كت هو أفضل استثمار قمنا به لتطوير أعمالنا.',
     name: 'خالد حسن',
     company: 'ديزاين هب',
-    image: '/images/author/Omar_Hassan.png',
+    image: '/images/testimonials/khaled.jpg',
     rating: 5
   }
 ];

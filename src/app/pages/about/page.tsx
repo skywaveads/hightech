@@ -35,7 +35,7 @@ export default function AboutPage() {
         </div>
         <div className="relative h-[400px]">
           <Image
-            src="/images/logo.png"
+            src="/images/about-history.jpg"
             alt="تاريخ شركة هاي تكنولوجي مصر"
             fill
             className="object-cover rounded-lg"
@@ -47,7 +47,7 @@ export default function AboutPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
         <div className="order-2 md:order-1 relative h-[400px]">
           <Image
-            src="/images/industries/banner.png"
+            src="/images/about-mission.jpg"
             alt="رؤية شركة هاي تكنولوجي مصر"
             fill
             className="object-cover rounded-lg"
@@ -75,7 +75,7 @@ export default function AboutPage() {
         <h2 className="text-3xl font-bold mb-8 text-center text-navy-700">فروعنا</h2>
         <div className="relative h-[500px] rounded-lg overflow-hidden">
           <Image
-            src="/images/industries/stickers.jpg"
+            src="/images/branches-map.jpg"
             alt="خريطة فروع شركة هاي تكنولوجي في مصر والسعودية وليبيا"
             fill
             className="object-cover"
