@@ -1,0 +1,32 @@
+# Test files
+test-*.js
+test-*.html
+*-test.js
+*-tests.js
+
+# Documentation files
+README*.md
+ADMIN-*.md
+VERCEL-*.md
+GOOGLE-*.md
+IMAGE-*.md
+FRONTEND-*.md
+FINAL-*.md
+
+# Environment files
+.env.local
+.env.example
+vercel-env-variables.txt
+
+# Service account
+google-service-account.json
+
+# Development files
+eslint.config.mjs
+next.config.ts
+postcss.config.mjs
+
+# Large files that aren't needed
+node_modules/
+.next/
+.git/

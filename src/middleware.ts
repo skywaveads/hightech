@@ -32,7 +32,7 @@ function base64UrlDecode(str: string): string {
 }
 
 // Simple JWT verification for Edge Runtime
-function verifyToken(token: string): any {
+function verifyToken(token: string): { id: string; role: string; exp?: number; fingerprint?: string; email?: string } | null {
   if (!JWT_SECRET) {
     console.error('JWT_SECRET is not defined in environment variables for middleware.');
     return null;
@@ -167,7 +167,7 @@ export function middleware(request: NextRequest) {
     // إضافة معلومات المستخدم للطلب
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-user-id', decoded.id);
-    requestHeaders.set('x-user-email', decoded.email);
+    requestHeaders.set('x-user-email', decoded.email || 'admin@hightech-eg.net');
     requestHeaders.set('x-user-role', decoded.role || 'admin');
     
     return NextResponse.next({

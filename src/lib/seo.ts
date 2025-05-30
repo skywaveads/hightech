@@ -174,7 +174,6 @@ export function generateProductSEO({
 export function generateBlogSEO({
   title,
   description,
-  content,
   publishedAt,
   updatedAt,
   author,
@@ -185,7 +184,6 @@ export function generateBlogSEO({
 }: {
   title: string
   description: string
-  content: string
   publishedAt: string
   updatedAt?: string
   author: string
@@ -219,7 +217,7 @@ export function generateBlogSEO({
   })
 }
 
-export function generateJSONLD(type: string, data: any) {
+export function generateJSONLD(type: string, data: Record<string, unknown>) {
   return {
     '@context': 'https://schema.org',
     '@type': type,
@@ -253,7 +251,12 @@ export function generateProductJSONLD({
   sku?: string
   gtin?: string
   url: string
-  reviews?: any[]
+  reviews?: Array<{
+    author: string
+    rating: number
+    comment: string
+    date: string
+  }>
   aggregateRating?: {
     ratingValue: number
     reviewCount: number
