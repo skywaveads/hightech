@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 // المفتاح السري لـ JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
+const JWT_SECRET = process.env.JWT_SECRET || 'g#Pz7@rM!aW^84qL*v2ZxT$kNdYh1sB9';
 
 // Base64 URL decode function
 function base64UrlDecode(str: string): string {

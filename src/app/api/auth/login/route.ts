@@ -12,7 +12,7 @@ import {
 } from '@/lib/security';
 
 // المفتاح السري لـ JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
+const JWT_SECRET = process.env.JWT_SECRET || 'g#Pz7@rM!aW^84qL*v2ZxT$kNdYh1sB9';
 const TOKEN_EXPIRES = process.env.TOKEN_EXPIRES || '2h';
 
 // الحصول على IP الحقيقي للمستخدم
