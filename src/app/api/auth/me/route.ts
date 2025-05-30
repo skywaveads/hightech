@@ -69,16 +69,19 @@ export async function GET(request: NextRequest) {
     }
     
     // إرجاع معلومات المستخدم
+    // Ensure all expected fields are present, providing defaults if necessary
+    const userPayload = {
+      id: decoded.id || 'default-admin-id', // Provide a default if id might be missing
+      email: decoded.email || 'admin@example.com', // Default email
+      role: decoded.role || 'admin', // Default role
+      loginTime: decoded.loginTime || Date.now(), // Default loginTime
+      fingerprint: decoded.fingerprint || '' // Default fingerprint
+    };
+
     return NextResponse.json({
       success: true,
       authenticated: true,
-      user: {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role || 'admin',
-        loginTime: decoded.loginTime,
-        fingerprint: decoded.fingerprint
-      }
+      user: userPayload
     });
     
   } catch (error) {

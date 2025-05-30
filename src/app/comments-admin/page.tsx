@@ -181,12 +181,19 @@ export default function CommentsAdminPage() {
         });
         
         if (response.ok) {
-          const data = await response.json();
-          setAdminData({
-            ...data,
-            loginTime: data.loginTime || Date.now()
-          });
-          setIsAuthenticated(true);
+          const responseData = await response.json();
+          if (responseData.success && responseData.user) {
+            setAdminData({
+              ...responseData.user,
+              loginTime: responseData.user.loginTime || Date.now()
+            });
+            setIsAuthenticated(true);
+          } else {
+            console.error('Authentication check successful, but user data is invalid:', responseData.message);
+            // Optionally, set an error state or show a toast
+            // showToast(responseData.message || 'بيانات المصادقة غير صالحة', 'error');
+            router.push('/admin-login?from=' + encodeURIComponent(window.location.pathname) + '&error=auth_data_invalid');
+          }
         } else {
           router.push('/admin-login?from=' + encodeURIComponent(window.location.pathname));
         }

@@ -133,15 +133,23 @@ export default function ProductsAdminPage() {
         });
         
         if (response.ok) {
-          const data = await response.json();
-          setAdminData({
-            ...data,
-            loginTime: data.loginTime || Date.now()
-          });
-          setIsAuthenticated(true);
-          
-          // فحص أمني إضافي
-          await performSecurityCheck();
+          const responseData = await response.json();
+          if (responseData.success && responseData.user) {
+            setAdminData({
+              ...responseData.user,
+              loginTime: responseData.user.loginTime || Date.now()
+            });
+            setIsAuthenticated(true);
+            
+            // فحص أمني إضافي
+            await performSecurityCheck();
+          } else {
+            // If response is OK but data is not as expected (e.g., success: false or user missing)
+            // This indicates an issue with the auth API's response or a valid but non-successful auth check
+            console.error('Authentication check successful, but user data is invalid:', responseData.message);
+            setSecurityAlerts(prev => [...prev, responseData.message || 'بيانات المصادقة غير صالحة']);
+            router.push('/admin-login?from=' + encodeURIComponent(window.location.pathname) + '&error=auth_data_invalid');
+          }
         } else {
           router.push('/admin-login?from=' + encodeURIComponent(window.location.pathname));
         }

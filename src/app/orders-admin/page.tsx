@@ -93,16 +93,51 @@ export default function OrdersAdminPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
 
-  // Admin Auth (Placeholder)
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Assume true for now
-  const [adminData, setAdminData] = useState<{ id: string; email: string; role: string; loginTime?: number } | null>({
-    id: 'admin1', email: 'admin@example.com', role: 'superadmin', loginTime: Date.now()
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminData, setAdminData] = useState<{ id: string; email: string; role: string; loginTime?: number } | null>(null);
 
 
   const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
     setToast({ message, type });
   };
+
+  // Auth check effect
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        if (response.ok) {
+          const responseData = await response.json();
+          if (responseData.success && responseData.user) {
+            setAdminData({
+              ...responseData.user,
+              loginTime: responseData.user.loginTime || Date.now()
+            });
+            setIsAuthenticated(true);
+          } else {
+            console.error('Authentication check successful, but user data is invalid:', responseData.message);
+            showToast(responseData.message || 'بيانات المصادقة غير صالحة', 'error');
+            router.push('/admin-login?from=' + encodeURIComponent(window.location.pathname) + '&error=auth_data_invalid');
+          }
+        } else {
+          router.push('/admin-login?from=' + encodeURIComponent(window.location.pathname));
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        showToast('فشل في التحقق من الهوية', 'error');
+        router.push('/admin-login');
+      }
+    }
+    
+    checkAuth();
+  }, [router]);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
