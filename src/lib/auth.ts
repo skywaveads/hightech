@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
+const JWT_SECRET = process.env.JWT_SECRET || 'g#Pz7@rM!aW^84qL*v2ZxT$kNdYh1sB9';
 
 export interface AdminUser {
   id: string;

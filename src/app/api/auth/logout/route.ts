@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || '';
     
     // الحصول على معلومات المستخدم من الكوكيز قبل حذفها
-    const token = cookies().get('token')?.value;
+    const token = cookies().get('admin-token')?.value;
     let userEmail = '';
     
     if (token) {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       maxAge: 0, // حذف فوري
     };
     
-    cookies().set('token', '', cookieOptions);
+    cookies().set('admin-token', '', cookieOptions);
     cookies().set('fingerprint', '', cookieOptions);
     
     // تسجيل حدث تسجيل الخروج
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       maxAge: 0,
     };
     
-    cookies().set('token', '', cookieOptions);
+    cookies().set('admin-token', '', cookieOptions);
     cookies().set('fingerprint', '', cookieOptions);
     
     return NextResponse.json(

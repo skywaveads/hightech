@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import {
   checkUserRateLimit,
   checkIPRateLimit,
@@ -229,63 +230,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Edge Runtime compatible JWT creation
+// إنشاء JWT باستخدام مكتبة jsonwebtoken الصحيحة
 function createJWT(payload: Record<string, unknown>, secret: string, expiresIn: string): string {
-  const header = {
-    alg: 'HS256',
-    typ: 'JWT'
-  };
-
-  // Convert expiresIn to timestamp
-  const now = Math.floor(Date.now() / 1000);
-  let exp = now;
-  
-  if (expiresIn.endsWith('h')) {
-    const hours = parseInt(expiresIn.slice(0, -1));
-    exp = now + (hours * 60 * 60);
-  } else if (expiresIn.endsWith('m')) {
-    const minutes = parseInt(expiresIn.slice(0, -1));
-    exp = now + (minutes * 60);
-  } else if (expiresIn.endsWith('d')) {
-    const days = parseInt(expiresIn.slice(0, -1));
-    exp = now + (days * 24 * 60 * 60);
-  }
-
-  const jwtPayload = {
-    ...payload,
-    iat: now,
-    exp: exp
-  };
-
-  const base64UrlEncode = (obj: Record<string, unknown> | { hash: string }) => {
-    return btoa(JSON.stringify(obj))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-  };
-
-  const encodedHeader = base64UrlEncode(header);
-  const encodedPayload = base64UrlEncode(jwtPayload);
-  const data = `${encodedHeader}.${encodedPayload}`;
-
-  // Create signature using Web Crypto API
-  // const encoder = new TextEncoder(); // Unused for simplified HMAC
-  // const key = encoder.encode(secret); // Unused for simplified HMAC
-  // const dataToSign = encoder.encode(data); // Unused for simplified HMAC
-
-  // For Edge Runtime, we'll use a simplified HMAC
-  // This is a basic implementation - in production you might want to use Web Crypto API
-  let hash = 0;
-  const combined = secret + data;
-  for (let i = 0; i < combined.length; i++) {
-    const char = combined.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  
-  const signature = base64UrlEncode({ hash: hash.toString() });
-  
-  return `${data}.${signature}`;
+  return jwt.sign(payload, secret, { expiresIn });
 }
 
 // إنشاء رمز JWT والاستجابة
@@ -307,7 +254,7 @@ function generateTokenAndRespond(userId: string, email: string, clientIP: string
     
     // إعداد كوكي آمن
     const cookieOptions = {
-      name: 'token',
+      name: 'admin-token',
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
