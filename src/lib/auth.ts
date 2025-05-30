@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
 
@@ -23,7 +23,7 @@ export async function verifyAdmin(request: NextRequest): Promise<AdminUser | nul
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
     
     if (!decoded || !decoded.id || !decoded.email) {
       console.log('[Auth] Invalid token payload');
@@ -33,7 +33,7 @@ export async function verifyAdmin(request: NextRequest): Promise<AdminUser | nul
     // Return admin user data
     return {
       id: decoded.id,
-      email: decoded.email,
+      email: decoded.email || '',
       role: decoded.role || 'admin'
     };
   } catch (error) {
