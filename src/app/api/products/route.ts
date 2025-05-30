@@ -2,59 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { GoogleSheetsProductsDatabase } from '@/lib/google-products';
 import { Product } from '@/types/product';
+import { verifyAdmin, AdminUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-
-// JWT verification for API routes
-const JWT_SECRET = process.env.JWT_SECRET || 'g#Pz7@rM!aW^84qL*v2ZxT$kNdYh1sB9';
-
-function base64UrlDecode(str: string): string {
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) {
-    str += '=';
-  }
-  return atob(str);
-}
-
-function verifyToken(token: string): any {
-  if (!JWT_SECRET) {
-    return null;
-  }
-  
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3 || !parts[1]) {
-      return null;
-    }
-
-    const payload = JSON.parse(base64UrlDecode(parts[1]));
-    
-    if (payload.exp && payload.exp < Date.now() / 1000) {
-      return null;
-    }
-    
-    return payload;
-  } catch (error) {
-    console.error('Error verifying token:', error);
-    return null;
-  }
-}
-
-function checkAuthentication(request: NextRequest): { authenticated: boolean; user?: any; error?: string } {
-  const token = cookies().get('token')?.value;
-  
-  if (!token) {
-    return { authenticated: false, error: 'No token provided' };
-  }
-  
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return { authenticated: false, error: 'Invalid token' };
-  }
-  
-  return { authenticated: true, user: decoded };
-}
 
 // Temporary fallback products for debugging
 const fallbackProducts: Product[] = [
@@ -115,8 +65,8 @@ export async function GET(request: NextRequest) {
     
     if (isAdminRequest) {
       // Verify authentication for admin requests
-      const authCheck = checkAuthentication(request);
-      if (!authCheck.authenticated) {
+      const adminUser: AdminUser | null = await verifyAdmin(request);
+      if (!adminUser) {
         return NextResponse.json(
           {
             success: false,
@@ -126,7 +76,7 @@ export async function GET(request: NextRequest) {
           { status: 401 }
         );
       }
-      console.log('[ProductsAPI] Admin authenticated:', authCheck.user?.email);
+      console.log('[ProductsAPI] Admin authenticated:', adminUser.email);
     }
     
     // Try Google Sheets first
@@ -201,8 +151,8 @@ export async function POST(request: NextRequest) {
     console.log('[ProductsAPI] POST request received');
     
     // Verify authentication for POST requests (admin only)
-    const authCheck = checkAuthentication(request);
-    if (!authCheck.authenticated) {
+    const adminUser: AdminUser | null = await verifyAdmin(request);
+    if (!adminUser) {
       return NextResponse.json(
         {
           success: false,
@@ -213,7 +163,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    console.log('[ProductsAPI] Admin authenticated for POST:', authCheck.user?.email);
+    console.log('[ProductsAPI] Admin authenticated for POST:', adminUser.email);
     
     const productData = await request.json();
     console.log('[ProductsAPI] Adding new product:', productData.name_ar);

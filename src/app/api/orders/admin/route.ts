@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrders } from '@/lib/google-orders';
-// import { verifyAdmin } from '@/lib/auth'; // Placeholder for admin auth
+import { verifyAdmin, AdminUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 // GET - Fetch all orders for admin
 export async function GET(request: NextRequest) {
-  // const isAdmin = await verifyAdmin(request);
-  // if (!isAdmin) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     // TODO: Add pagination, sorting, filtering parameters if needed
@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Placeholder for bulk operations if needed in the future
 // export async function POST(request: NextRequest) {
-//   // const isAdmin = await verifyAdmin(request);
-//   // if (!isAdmin) {
-//   //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+//   const adminUser: AdminUser | null = await verifyAdmin(request);
+//   if (!adminUser) {
+//     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 //   // }
 //   try {
 //     const { action, orderIds, updateData } = await request.json();

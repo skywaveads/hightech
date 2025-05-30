@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSheetsProductsDatabase } from '@/lib/google-products';
 import { Product } from '@/types/product';
+import { verifyAdmin, AdminUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     console.log(`[ProductAPI] Looking for product with ID: ${params.id}`);
     
@@ -16,7 +22,7 @@ export async function GET(
       const products = await GoogleSheetsProductsDatabase.getAllProducts();
       console.log(`[ProductAPI] Retrieved ${products.length} products from Google Sheets`);
       
-      const product = products.find((p: Product) => 
+      const product = products.find((p: Product) =>
         p._id === params.id || p.slug === params.id
       );
       
@@ -50,12 +56,17 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     console.log(`[ProductAPI] PUT request for product: ${params.id}`);
     
     try {
       const products = await GoogleSheetsProductsDatabase.getAllProducts();
-      const product = products.find((p: Product) => 
+      const product = products.find((p: Product) =>
         p._id === params.id || p.slug === params.id
       );
       
@@ -106,12 +117,17 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     console.log(`[ProductAPI] DELETE request for product: ${params.id}`);
     
     try {
       const products = await GoogleSheetsProductsDatabase.getAllProducts();
-      const product = products.find((p: Product) => 
+      const product = products.find((p: Product) =>
         p._id === params.id || p.slug === params.id
       );
       
@@ -156,6 +172,11 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     console.log(`[ProductAPI] PATCH request for product: ${params.id}`);
     
@@ -164,7 +185,7 @@ export async function PATCH(
     if (action === 'toggle-status') {
       try {
         const products = await GoogleSheetsProductsDatabase.getAllProducts();
-        const product = products.find((p: Product) => 
+        const product = products.find((p: Product) =>
           p._id === params.id || p.slug === params.id
         );
         
@@ -177,8 +198,8 @@ export async function PATCH(
         }
         
         // Toggle product status in Google Sheets
-        const success = await GoogleSheetsProductsDatabase.updateProduct(params.id, { 
-          isActive: !product.isActive 
+        const success = await GoogleSheetsProductsDatabase.updateProduct(params.id, {
+          isActive: !product.isActive
         });
         
         if (!success) {

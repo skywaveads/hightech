@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSheetsDatabase } from '@/lib/google-sheets';
+import { verifyAdmin, AdminUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const comment = await GoogleSheetsDatabase.getCommentById(params.id);
     
@@ -33,6 +39,11 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const updateData = await request.json();
     const success = await GoogleSheetsDatabase.updateComment(params.id, updateData);
@@ -61,6 +72,11 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const success = await GoogleSheetsDatabase.deleteComment(params.id);
     
@@ -86,6 +102,11 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { action, ...updateData } = await request.json();
     

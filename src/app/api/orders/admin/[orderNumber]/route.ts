@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  getOrderByOrderNumber, 
-  updateOrderInSheet, 
+import {
+  getOrderByOrderNumber,
+  updateOrderInSheet,
   deleteOrderFromSheet,
-  updateOrderStatus // Keep if direct status update is preferred for PATCH
+  updateOrderStatus
 } from '@/lib/google-orders';
 import { Order } from '@/types/order';
-// import { verifyAdmin } from '@/lib/auth'; // Placeholder for admin auth
+import { verifyAdmin, AdminUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,10 +15,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { orderNumber: string } }
 ) {
-  // const isAdmin = await verifyAdmin(request);
-  // if (!isAdmin) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const order = await getOrderByOrderNumber(params.orderNumber);
@@ -46,10 +46,10 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { orderNumber: string } }
 ) {
-  // const isAdmin = await verifyAdmin(request);
-  // if (!isAdmin) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const orderData: Partial<Order> = await request.json();
@@ -92,10 +92,10 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { orderNumber: string } }
 ) {
-  // const isAdmin = await verifyAdmin(request);
-  // if (!isAdmin) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const result = await deleteOrderFromSheet(params.orderNumber);
@@ -124,10 +124,10 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { orderNumber: string } }
 ) {
-  // const isAdmin = await verifyAdmin(request);
-  // if (!isAdmin) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { status } = await request.json();
 

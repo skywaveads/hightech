@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSheetsDatabase } from '@/lib/google-sheets';
+import { verifyAdmin, AdminUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 // GET - جلب جميع التعليقات للإدارة
 export async function GET(request: NextRequest) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -26,6 +32,11 @@ export async function GET(request: NextRequest) {
 
 // POST - عمليات جماعية على التعليقات
 export async function POST(request: NextRequest) {
+  const adminUser: AdminUser | null = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { action, commentIds, updateData } = await request.json();
 
@@ -41,26 +52,26 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'bulk-delete':
         result = await GoogleSheetsDatabase.bulkDeleteComments(commentIds);
-        return NextResponse.json({ 
-          success: true, 
+        return NextResponse.json({
+          success: true,
           deletedCount: result,
-          message: `تم حذف ${result} تعليق بنجاح` 
+          message: `تم حذف ${result} تعليق بنجاح`
         });
 
       case 'bulk-approve':
         result = await GoogleSheetsDatabase.bulkUpdateComments(commentIds, { status: 'active' });
-        return NextResponse.json({ 
-          success: true, 
+        return NextResponse.json({
+          success: true,
           updatedCount: result,
-          message: `تم اعتماد ${result} تعليق بنجاح` 
+          message: `تم اعتماد ${result} تعليق بنجاح`
         });
 
       case 'bulk-reject':
         result = await GoogleSheetsDatabase.bulkUpdateComments(commentIds, { status: 'hidden' });
-        return NextResponse.json({ 
-          success: true, 
+        return NextResponse.json({
+          success: true,
           updatedCount: result,
-          message: `تم رفض ${result} تعليق بنجاح` 
+          message: `تم رفض ${result} تعليق بنجاح`
         });
 
       case 'bulk-update':
@@ -71,10 +82,10 @@ export async function POST(request: NextRequest) {
           );
         }
         result = await GoogleSheetsDatabase.bulkUpdateComments(commentIds, updateData);
-        return NextResponse.json({ 
-          success: true, 
+        return NextResponse.json({
+          success: true,
           updatedCount: result,
-          message: `تم تحديث ${result} تعليق بنجاح` 
+          message: `تم تحديث ${result} تعليق بنجاح`
         });
 
       default:
