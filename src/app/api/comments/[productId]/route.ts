@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CommentDatabase } from '@/lib/database';
-import { CommentService } from '@/lib/models/Comment';
+// import { CommentService } from '@/lib/models/Comment'; // Unused import
 
 // GET - Fetch comments for a product
 export async function GET(

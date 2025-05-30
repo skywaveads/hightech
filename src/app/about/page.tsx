@@ -3,48 +3,41 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  ArrowRight, 
-  CheckCircle, 
-  Star, 
-  Zap, 
-  Target, 
+import {
+  ArrowRight,
+  CheckCircle,
+  Zap,
+  Target,
   TrendingUp,
   Award,
   Users,
-  Clock,
   Shield,
   Heart,
   Globe,
-  BarChart3,
   Lightbulb,
   Rocket,
   MessageCircle,
   Building,
   Calendar,
-  MapPin,
-  Phone,
-  Mail,
   Sparkles,
   Eye,
   Compass,
   Trophy,
   Users as HandshakeIcon,
   Leaf,
-  ChevronDown,
-  Play
+  ChevronDown
 } from 'lucide-react';
 import { companyInfo } from '@/data/company';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CounterAnimation from '@/components/ui/CounterAnimation';
 
 export default function AboutPage() {
-  const [activeTab, setActiveTab] = useState('mission');
-  const [isVisible, setIsVisible] = useState(false);
+  // const [activeTab, setActiveTab] = useState('mission'); // Unused
+  // const [isVisible, setIsVisible] = useState(false); // Unused
 
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+  // useEffect(() => { // Unused
+  //   setIsVisible(true);
+  // }, []);
 
   const stats = [
     { icon: Calendar, number: '6+', text: 'سنوات من الخبرة', color: 'text-blue-500' },

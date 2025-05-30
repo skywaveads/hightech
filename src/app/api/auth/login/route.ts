@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
     // استخراج معلومات الطلب
     const clientIP = getClientIP(request);
     const userAgent = request.headers.get('user-agent') || '';
-    const acceptLanguage = request.headers.get('accept-language') || '';
+    // const acceptLanguage = request.headers.get('accept-language') || ''; // Unused
     const browserFingerprint = request.headers.get('x-browser-fingerprint') || '';
-    const csrfToken = request.headers.get('x-csrf-token') || '';
+    // const csrfToken = request.headers.get('x-csrf-token') || ''; // Unused
     
     // استخراج بيانات الإدخال
     const body = await request.json();
@@ -204,18 +204,18 @@ export async function POST(request: NextRequest) {
       return unauthorizedResponse(userRateLimit.remainingAttempts - 1);
     }
     
-  } catch (error: any) {
+  } catch (error) {
     console.error('خطأ في تسجيل الدخول:', error);
-    
+    const typedError = error as Error;
     // تسجيل حدث الخطأ
     logSecurityEvent({
       type: 'LOGIN_FAILED',
       ip: getClientIP(request),
       userAgent: request.headers.get('user-agent') || '',
       timestamp: Date.now(),
-      details: { 
+      details: {
         reason: 'server_error',
-        error: error.message
+        error: typedError.message
       }
     });
     
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Edge Runtime compatible JWT creation
-function createJWT(payload: any, secret: string, expiresIn: string): string {
+function createJWT(payload: Record<string, unknown>, secret: string, expiresIn: string): string {
   const header = {
     alg: 'HS256',
     typ: 'JWT'
@@ -257,7 +257,7 @@ function createJWT(payload: any, secret: string, expiresIn: string): string {
     exp: exp
   };
 
-  const base64UrlEncode = (obj: any) => {
+  const base64UrlEncode = (obj: Record<string, unknown> | { hash: string }) => {
     return btoa(JSON.stringify(obj))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
@@ -269,9 +269,9 @@ function createJWT(payload: any, secret: string, expiresIn: string): string {
   const data = `${encodedHeader}.${encodedPayload}`;
 
   // Create signature using Web Crypto API
-  const encoder = new TextEncoder();
-  const key = encoder.encode(secret);
-  const dataToSign = encoder.encode(data);
+  // const encoder = new TextEncoder(); // Unused for simplified HMAC
+  // const key = encoder.encode(secret); // Unused for simplified HMAC
+  // const dataToSign = encoder.encode(data); // Unused for simplified HMAC
 
   // For Edge Runtime, we'll use a simplified HMAC
   // This is a basic implementation - in production you might want to use Web Crypto API

@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import {
   Lock, Mail, AlertCircle, Eye, EyeOff, Shield,
-  Fingerprint, Clock, Globe, Monitor, Smartphone,
-  CheckCircle, XCircle, RefreshCw, ArrowLeft
+  Fingerprint, Clock, Monitor,
+  CheckCircle, RefreshCw, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+// import Image from 'next/image'; // Unused import
 import './styles.css';
 
 // نموذج البيانات
@@ -47,7 +47,7 @@ function AdminLoginContent() {
   const [isSecurityCheckPassed, setIsSecurityCheckPassed] = useState(false);
   
   // إعداد React Hook Form
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<LoginFormInputs>({
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>({
     defaultValues: {
       email: '',
       password: '',
@@ -179,8 +179,12 @@ function AdminLoginContent() {
       const from = searchParams.get('from') || '/products-admin';
       router.push(from);
       
-    } catch (error: any) {
-      setError(error.message || 'حدث خطأ أثناء محاولة تسجيل الدخول');
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message || 'حدث خطأ أثناء محاولة تسجيل الدخول');
+      } else {
+        setError('حدث خطأ غير متوقع أثناء محاولة تسجيل الدخول');
+      }
     } finally {
       setIsLoading(false);
     }

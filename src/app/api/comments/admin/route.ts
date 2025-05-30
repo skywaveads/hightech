@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const status = searchParams.get('status') || 'all';
+    // const status = searchParams.get('status') || 'all'; // Unused variable
     const sortBy = (searchParams.get('sortBy') || 'newest') as 'newest' | 'oldest' | 'highest_rating' | 'lowest_rating' | 'most_helpful';
 
     const result = await GoogleSheetsDatabase.getAllComments(page, limit, sortBy);

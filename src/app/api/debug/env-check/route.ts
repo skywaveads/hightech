@@ -117,7 +117,7 @@ function generateRecommendations(vercelEnv: Record<string, string>, googleEnv: R
 
   // فحص متغيرات Google Sheets
   const missingGoogleVars = Object.entries(googleEnv)
-    .filter(([key, value]: [string, string]) => value.includes('❌'))
+    .filter(([, value]: [string, string]) => value.includes('❌'))
     .map(([key]) => key);
 
   if (missingGoogleVars.length > 0) {
@@ -126,7 +126,7 @@ function generateRecommendations(vercelEnv: Record<string, string>, googleEnv: R
 
   // فحص متغيرات الأمان
   const missingSecurityVars = Object.entries(securityEnv)
-    .filter(([key, value]: [string, string]) => value.includes('❌'))
+    .filter(([, value]: [string, string]) => value.includes('❌'))
     .map(([key]) => key);
 
   if (missingSecurityVars.length > 0) {

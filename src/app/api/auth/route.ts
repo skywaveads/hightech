@@ -5,7 +5,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
 const TOKEN_EXPIRES = process.env.TOKEN_EXPIRES || '2h';
 
 // Edge Runtime compatible JWT verification
-function verifyJWT(token: string, secret: string): any | null {
+function verifyJWT(token: string, secret: string): Record<string, any> | null {
+  // 'secret' is used in the simplified HMAC in createJWT, assuming similar usage or future use here.
+  // If truly unused in verifyJWT's logic (e.g. if signature verification was added and used it),
+  // then it could be removed from verifyJWT's parameters. For now, keeping as it's part of the function signature.
   try {
     const parts = token.split('.');
     if (parts.length !== 3) {
@@ -40,7 +43,7 @@ function base64UrlDecode(str: string): string {
 }
 
 // Edge Runtime compatible JWT creation
-function createJWT(payload: any, secret: string, expiresIn: string): string {
+function createJWT(payload: Record<string, unknown>, secret: string, expiresIn: string): string {
   const header = {
     alg: 'HS256',
     typ: 'JWT'
@@ -67,7 +70,7 @@ function createJWT(payload: any, secret: string, expiresIn: string): string {
     exp: exp
   };
 
-  const base64UrlEncode = (obj: any) => {
+  const base64UrlEncode = (obj: Record<string, unknown> | { hash: string }) => {
     return btoa(JSON.stringify(obj))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
@@ -138,10 +141,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
-  } catch (error: any) {
-    console.error('Error during login:', error);
+  } catch (error) {
+    const typedError = error as Error;
+    console.error('Error during login:', typedError);
     return NextResponse.json(
-      { message: error.message || 'فشل في تسجيل الدخول' },
+      { message: typedError.message || 'فشل في تسجيل الدخول' },
       { status: 500 }
     );
   }
@@ -168,10 +172,11 @@ export async function GET() {
     }
     
     return NextResponse.json(data);
-  } catch (error: any) {
-    console.error('Error checking auth status:', error);
+  } catch (error) {
+    const typedError = error as Error;
+    console.error('Error checking auth status:', typedError);
     return NextResponse.json(
-      { message: error.message || 'فشل في التحقق من حالة المصادقة' },
+      { message: typedError.message || 'فشل في التحقق من حالة المصادقة' },
       { status: 500 }
     );
   }

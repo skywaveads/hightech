@@ -5,7 +5,20 @@ import { getRecentSecurityEvents, detectSuspiciousActivity } from '@/lib/securit
 const JWT_SECRET = process.env.JWT_SECRET || 'SuperStrongSecretKey_!234';
 
 // Edge Runtime compatible JWT verification
-function verifyJWT(token: string, secret: string): any | null {
+// Define a more specific type for the decoded JWT payload if possible
+interface DecodedJWTPayload {
+  id?: string;
+  email?: string;
+  loginTime?: number;
+  fingerprint?: string;
+  exp?: number;
+  [key: string]: any; // Allow other properties
+}
+
+function verifyJWT(token: string, secret: string): DecodedJWTPayload | null {
+  // 'secret' is part of the function signature, implying it's intended for use,
+  // e.g., in a more complete signature verification.
+  // For now, it's not directly used in this simplified verification logic beyond being a parameter.
   try {
     const parts = token.split('.');
     if (parts.length !== 3) {
@@ -96,7 +109,7 @@ export async function GET(request: NextRequest) {
     if (isSuspicious) {
       threats.push({
         type: 'suspicious_activity',
-        level: 'medium',
+        level: 'medium' as 'high' | 'medium' | 'low',
         description: 'تم اكتشاف نشاط مشبوه من عنوان IP الحالي'
       });
       alerts.push('تم اكتشاف نشاط مشبوه من عنوان IP الحالي');
@@ -111,7 +124,7 @@ export async function GET(request: NextRequest) {
     if (failedLogins.length > 3) {
       threats.push({
         type: 'multiple_failed_logins',
-        level: 'high',
+        level: 'high' as 'high' | 'medium' | 'low',
         description: `${failedLogins.length} محاولة تسجيل دخول فاشلة في الساعة الأخيرة`
       });
       alerts.push(`${failedLogins.length} محاولة تسجيل دخول فاشلة في الساعة الأخيرة`);
@@ -126,7 +139,7 @@ export async function GET(request: NextRequest) {
     if (uniqueIPs.size > 5) {
       threats.push({
         type: 'multiple_ips',
-        level: 'medium',
+        level: 'medium' as 'high' | 'medium' | 'low',
         description: `محاولات وصول من ${uniqueIPs.size} عناوين IP مختلفة في آخر 24 ساعة`
       });
     }
@@ -200,8 +213,13 @@ export async function GET(request: NextRequest) {
 }
 
 // إنشاء توصيات أمنية
-function generateSecurityRecommendations(threats: any[], securityScore: number): string[] {
-  const recommendations = [];
+interface Threat {
+  type: string;
+  level: 'high' | 'medium' | 'low';
+  description: string;
+}
+function generateSecurityRecommendations(threats: Threat[], securityScore: number): string[] {
+  const recommendations: string[] = [];
   
   if (securityScore < 70) {
     recommendations.push('يُنصح بتغيير كلمة المرور فوراً');

@@ -14,7 +14,18 @@ function base64UrlDecode(str: string): string {
 }
 
 // Simple JWT verification compatible with Vercel
-function verifyToken(token: string): any {
+interface DecodedToken {
+  id?: string;
+  email?: string;
+  role?: string;
+  loginTime?: number;
+  fingerprint?: string;
+  exp?: number;
+  iat?: number;
+  [key: string]: any; // Allow other properties
+}
+
+function verifyToken(token: string): DecodedToken | null {
   if (!JWT_SECRET) {
     return null;
   }
@@ -46,7 +57,7 @@ function verifyToken(token: string): any {
 }
 
 // التحقق من حالة المصادقة
-export async function GET(request: NextRequest) {
+export async function GET() { // Removed unused request parameter
   try {
     // الحصول على الرمز من الكوكيز
     const token = cookies().get('token')?.value;
