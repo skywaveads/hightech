@@ -7,6 +7,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // المسارات المحمية
 const protectedPaths = [
   '/products-admin',
+  '/orders-admin',
+  '/comments-admin',
   '/admin',
   '/dashboard'
 ];
