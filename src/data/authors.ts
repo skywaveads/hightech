@@ -83,7 +83,7 @@ export const authors: Author[] = [
     titleAr: 'مدير المبيعات الإقليمي',
     bio: 'Specializes in Libya market development and import regulations for cutting equipment. Expert in regional business development.',
     bioAr: 'متخصص في تطوير السوق الليبي ولوائح استيراد معدات القطع. خبير في تطوير الأعمال الإقليمية.',
-    image: '/images/author/Ibrahim_Masoud.png',
+    image: '/images/author/Omar_Hassan.png',
     linkedin: 'https://linkedin.com/in/ibrahim-masoud',
     sameAs: [
       'https://linkedin.com/in/ibrahim-masoud',
@@ -98,7 +98,7 @@ export const authors: Author[] = [
     titleAr: 'أخصائي الاستيراد',
     bio: 'Expert in international trade and equipment import procedures. Specializes in Libya and North Africa markets.',
     bioAr: 'خبير في التجارة الدولية وإجراءات استيراد المعدات. متخصص في الأسواق الليبية وشمال إفريقيا.',
-    image: '/images/author/Tariq_Mohamed.png',
+    image: '/images/author/Mohamed_Saleh.png',
     linkedin: 'https://linkedin.com/in/tariq-mohamed',
     sameAs: [
       'https://linkedin.com/in/tariq-mohamed',
