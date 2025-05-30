@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار Google Sheets - تشخيص المشاكل</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 تشخيص مشاكل Google Sheets على Vercel</h1>
+        
+        <div class="test-section">
+            <h3>⚙️ إعداد URL الموقع</h3>
+            <input type="text" id="baseUrl" class="url-input" 
+                   placeholder="أدخل رابط موقعك على Vercel (مثال: https://your-site.vercel.app)"
+                   value="">
+            <button onclick="saveBaseUrl()">حفظ الرابط</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 اختبار تسجيل الدخول للإدارة</h3>
+            <button onclick="testAdminLogin()">تسجيل دخول الإدارة</button>
+            <div id="loginResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 اختبار اتصال Google Sheets</h3>
+            <button onclick="testGoogleSheets()" id="testSheetsBtn">اختبار Google Sheets</button>
+            <div id="sheetsResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠️ اختبار عمليات CRUD</h3>
+            <button onclick="testProductsAPI()">اختبار API المنتجات</button>
+            <button onclick="testCommentsAPI()">اختبار API التعليقات</button>
+            <button onclick="testOrdersAPI()">اختبار API الطلبات</button>
+            <div id="crudResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let baseUrl = '';
+        let adminToken = '';
+
+        // Load saved base URL
+        window.onload = function() {
+            const saved = localStorage.getItem('vercel_base_url');
+            if (saved) {
+                document.getElementById('baseUrl').value = saved;
+                baseUrl = saved;
+            }
+        };
+
+        function saveBaseUrl() {
+            const url = document.getElementById('baseUrl').value.trim();
+            if (url) {
+                baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+                localStorage.setItem('vercel_base_url', baseUrl);
+                showResult('loginResult', `تم حفظ الرابط: ${baseUrl}`, 'info');
+            }
+        }
+
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = content;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        async function testAdminLogin() {
+            if (!baseUrl) {
+                showResult('loginResult', 'يرجى إدخال رابط الموقع أولاً', 'error');
+                return;
+            }
+
+            showResult('loginResult', 'جاري تسجيل الدخول...', 'loading');
+
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@hightech.com',
+                        password: 'admin123'
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    adminToken = data.token || 'logged_in';
+                    showResult('loginResult', `✅ تم تسجيل الدخول بنجاح!\n\nالبيانات:\n${JSON.stringify(data, null, 2)}`, 'success');
+                    document.getElementById('testSheetsBtn').disabled = false;
+                } else {
+                    showResult('loginResult', `❌ فشل تسجيل الدخول:\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('loginResult', `❌ خطأ في الاتصال:\n${error.message}`, 'error');
+            }
+        }
+
+        async function testGoogleSheets() {
+            if (!baseUrl) {
+                showResult('sheetsResult', 'يرجى إدخال رابط الموقع أولاً', 'error');
+                return;
+            }
+
+            if (!adminToken) {
+                showResult('sheetsResult', 'يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            showResult('sheetsResult', 'جاري اختبار اتصال Google Sheets...', 'loading');
+
+            try {
+                const response = await fetch(`${baseUrl}/api/debug/google-sheets-test`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let resultText = '📊 نتائج اختبار Google Sheets:\n\n';
+                    
+                    // Environment Variables Check
+                    resultText += '🔧 متغيرات البيئة:\n';
+                    Object.entries(data.envVariables).forEach(([key, value]) => {
+                        const status = value ? '✅' : '❌';
+                        resultText += `${status} ${key}: ${value ? 'موجود' : 'مفقود'}\n`;
+                    });
+                    
+                    resultText += '\n🔗 اختبار الاتصال مع Google Sheets:\n';
+                    if (data.googleSheetsTest.success) {
+                        resultText += `✅ نجح الاتصال مع Google Sheets\n`;
+                        resultText += `📝 عدد الصفوف المقروءة: ${data.googleSheetsTest.rowCount}\n`;
+                    } else {
+                        resultText += `❌ فشل الاتصال مع Google Sheets\n`;
+                        resultText += `خطأ: ${data.googleSheetsTest.error}\n`;
+                        resultText += `تفاصيل: ${data.googleSheetsTest.details}\n`;
+                    }
+                    
+                    resultText += `\n👤 بيانات الإدارة:\n`;
+                    resultText += `ID: ${data.admin.id}\n`;
+                    resultText += `Email: ${data.admin.email}\n`;
+                    resultText += `Role: ${data.admin.role}\n`;
+                    
+                    resultText += `\n🕒 الوقت: ${data.timestamp}\n`;
+                    resultText += `🌍 البيئة: ${data.environment}\n`;
+                    
+                    const resultType = data.googleSheetsTest.success ? 'success' : 'error';
+                    showResult('sheetsResult', resultText, resultType);
+                } else {
+                    showResult('sheetsResult', `❌ فشل الاختبار:\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('sheetsResult', `❌ خطأ في الاتصال:\n${error.message}`, 'error');
+            }
+        }
+
+        async function testProductsAPI() {
+            await testCRUDOperation('products', 'المنتجات');
+        }
+
+        async function testCommentsAPI() {
+            await testCRUDOperation('comments/admin', 'التعليقات');
+        }
+
+        async function testOrdersAPI() {
+            await testCRUDOperation('orders/admin', 'الطلبات');
+        }
+
+        async function testCRUDOperation(endpoint, name) {
+            if (!baseUrl || !adminToken) {
+                showResult('crudResult', 'يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            showResult('crudResult', `جاري اختبار API ${name}...`, 'loading');
+
+            try {
+                const response = await fetch(`${baseUrl}/api/${endpoint}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                let resultText = `📋 نتائج اختبار API ${name}:\n\n`;
+                resultText += `🔗 الرابط: ${baseUrl}/api/${endpoint}\n`;
+                resultText += `📊 حالة الاستجابة: ${response.status}\n`;
+                
+                if (response.ok) {
+                    resultText += `✅ نجح الاتصال مع API ${name}\n`;
+                    if (Array.isArray(data)) {
+                        resultText += `📝 عدد العناصر: ${data.length}\n`;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        resultText += `📝 عدد العناصر: ${data.data.length}\n`;
+                    }
+                    resultText += `\n📄 البيانات:\n${JSON.stringify(data, null, 2)}`;
+                    showResult('crudResult', resultText, 'success');
+                } else {
+                    resultText += `❌ فشل الاتصال مع API ${name}\n`;
+                    resultText += `خطأ: ${JSON.stringify(data, null, 2)}`;
+                    showResult('crudResult', resultText, 'error');
+                }
+            } catch (error) {
+                showResult('crudResult', `❌ خطأ في اختبار API ${name}:\n${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

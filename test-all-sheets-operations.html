@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test All Google Sheets Operations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.danger {
+            background-color: #dc3545;
+        }
+        button.danger:hover {
+            background-color: #c82333;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test All Google Sheets Operations</h1>
+        <p>This tool tests all CRUD operations on Comments, Products, and Orders Google Sheets.</p>
+        
+        <!-- Environment Check -->
+        <div class="test-section">
+            <h2>📋 Environment Check</h2>
+            <button onclick="checkEnvironment()">Check Environment Variables</button>
+            <div id="envResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Comments Tests -->
+        <div class="container">
+            <h2>💬 Comments Sheet Tests</h2>
+            
+            <div class="test-section">
+                <h3>Read Comments</h3>
+                <button onclick="testCommentsRead()">Get All Comments</button>
+                <div id="commentsReadResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>Create Comment</h3>
+                <div class="form-group">
+                    <label>Product ID:</label>
+                    <input type="text" id="commentProductId" value="test-product-123" placeholder="Product ID">
+                </div>
+                <div class="form-group">
+                    <label>User Name:</label>
+                    <input type="text" id="commentUserName" value="Test User" placeholder="User Name">
+                </div>
+                <div class="form-group">
+                    <label>Comment:</label>
+                    <textarea id="commentText" placeholder="Test comment">This is a test comment from admin panel</textarea>
+                </div>
+                <button onclick="testCommentsCreate()">Create Comment</button>
+                <div id="commentsCreateResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>Update/Delete Comment</h3>
+                <div class="form-group">
+                    <label>Comment ID:</label>
+                    <input type="text" id="commentId" placeholder="Comment ID">
+                </div>
+                <button onclick="testCommentsUpdate()">Update Comment</button>
+                <button class="danger" onclick="testCommentsDelete()">Delete Comment</button>
+                <div id="commentsModifyResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Products Tests -->
+        <div class="container">
+            <h2>📦 Products Sheet Tests</h2>
+            
+            <div class="test-section">
+                <h3>Read Products</h3>
+                <button onclick="testProductsRead()">Get All Products</button>
+                <div id="productsReadResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>Create Product</h3>
+                <div class="form-group">
+                    <label>Product Name (Arabic):</label>
+                    <input type="text" id="productNameAr" value="منتج تجريبي" placeholder="Product Name in Arabic">
+                </div>
+                <div class="form-group">
+                    <label>Product Name (English):</label>
+                    <input type="text" id="productNameEn" value="Test Product" placeholder="Product Name in English">
+                </div>
+                <button onclick="testProductsCreate()">Create Product</button>
+                <div id="productsCreateResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>Update/Delete Product</h3>
+                <div class="form-group">
+                    <label>Product ID:</label>
+                    <input type="text" id="productId" placeholder="Product ID">
+                </div>
+                <button onclick="testProductsUpdate()">Update Product</button>
+                <button class="danger" onclick="testProductsDelete()">Delete Product</button>
+                <div id="productsModifyResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Orders Tests -->
+        <div class="container">
+            <h2>📋 Orders Sheet Tests</h2>
+            
+            <div class="test-section">
+                <h3>Read Orders</h3>
+                <button onclick="testOrdersRead()">Get All Orders</button>
+                <div id="ordersReadResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>Create Order</h3>
+                <div class="form-group">
+                    <label>Customer Name:</label>
+                    <input type="text" id="customerName" value="Test Customer" placeholder="Customer Name">
+                </div>
+                <div class="form-group">
+                    <label>Customer Email:</label>
+                    <input type="email" id="customerEmail" value="test@example.com" placeholder="Customer Email">
+                </div>
+                <button onclick="testOrdersCreate()">Create Order</button>
+                <div id="ordersCreateResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>Update/Delete Order</h3>
+                <div class="form-group">
+                    <label>Order Number:</label>
+                    <input type="text" id="orderNumber" placeholder="Order Number">
+                </div>
+                <button onclick="testOrdersUpdate()">Update Order</button>
+                <button class="danger" onclick="testOrdersDelete()">Delete Order</button>
+                <div id="ordersModifyResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get admin token from localStorage
+        function getAdminToken() {
+            return localStorage.getItem('adminToken');
+        }
+
+        // Make authenticated API request
+        async function makeRequest(url, options = {}) {
+            const token = getAdminToken();
+            if (!token) {
+                throw new Error('No admin token found. Please login first.');
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Cookie': `adminToken=${token}`,
+                ...options.headers
+            };
+
+            const response = await fetch(url, {
+                ...options,
+                headers,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            return response.json();
+        }
+
+        // Show result in UI
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Show loading state
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result loading';
+            element.textContent = 'Loading...';
+        }
+
+        // Environment Check
+        async function checkEnvironment() {
+            showLoading('envResult');
+            try {
+                const result = await makeRequest('/api/test-all-sheets-operations');
+                showResult('envResult', result);
+            } catch (error) {
+                showResult('envResult', { error: error.message }, true);
+            }
+        }
+
+        // Comments Tests
+        async function testCommentsRead() {
+            showLoading('commentsReadResult');
+            try {
+                const result = await makeRequest('/api/test-all-sheets-operations');
+                showResult('commentsReadResult', result.tests.comments);
+            } catch (error) {
+                showResult('commentsReadResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCommentsCreate() {
+            showLoading('commentsCreateResult');
+            try {
+                const data = {
+                    operation: 'create',
+                    type: 'comments',
+                    data: {
+                        productId: document.getElementById('commentProductId').value,
+                        userName: document.getElementById('commentUserName').value,
+                        comment: document.getElementById('commentText').value,
+                        userEmail: 'test@example.com',
+                        rating: 5,
+                        title: 'Test Comment'
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('commentsCreateResult', result);
+            } catch (error) {
+                showResult('commentsCreateResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCommentsUpdate() {
+            showLoading('commentsModifyResult');
+            try {
+                const data = {
+                    operation: 'update',
+                    type: 'comments',
+                    data: {
+                        id: document.getElementById('commentId').value,
+                        status: 'active',
+                        title: 'Updated Test Comment'
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('commentsModifyResult', result);
+            } catch (error) {
+                showResult('commentsModifyResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCommentsDelete() {
+            showLoading('commentsModifyResult');
+            try {
+                const data = {
+                    operation: 'delete',
+                    type: 'comments',
+                    data: {
+                        id: document.getElementById('commentId').value
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('commentsModifyResult', result);
+            } catch (error) {
+                showResult('commentsModifyResult', { error: error.message }, true);
+            }
+        }
+
+        // Products Tests
+        async function testProductsRead() {
+            showLoading('productsReadResult');
+            try {
+                const result = await makeRequest('/api/test-all-sheets-operations');
+                showResult('productsReadResult', result.tests.products);
+            } catch (error) {
+                showResult('productsReadResult', { error: error.message }, true);
+            }
+        }
+
+        async function testProductsCreate() {
+            showLoading('productsCreateResult');
+            try {
+                const data = {
+                    operation: 'create',
+                    type: 'products',
+                    data: {
+                        name_ar: document.getElementById('productNameAr').value,
+                        name_en: document.getElementById('productNameEn').value,
+                        slug: 'test-product-' + Date.now(),
+                        price: 100,
+                        category: 'test'
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('productsCreateResult', result);
+            } catch (error) {
+                showResult('productsCreateResult', { error: error.message }, true);
+            }
+        }
+
+        async function testProductsUpdate() {
+            showLoading('productsModifyResult');
+            try {
+                const data = {
+                    operation: 'update',
+                    type: 'products',
+                    data: {
+                        id: document.getElementById('productId').value,
+                        name_ar: 'منتج محدث',
+                        price: 150
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('productsModifyResult', result);
+            } catch (error) {
+                showResult('productsModifyResult', { error: error.message }, true);
+            }
+        }
+
+        async function testProductsDelete() {
+            showLoading('productsModifyResult');
+            try {
+                const data = {
+                    operation: 'delete',
+                    type: 'products',
+                    data: {
+                        id: document.getElementById('productId').value
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('productsModifyResult', result);
+            } catch (error) {
+                showResult('productsModifyResult', { error: error.message }, true);
+            }
+        }
+
+        // Orders Tests
+        async function testOrdersRead() {
+            showLoading('ordersReadResult');
+            try {
+                const result = await makeRequest('/api/test-all-sheets-operations');
+                showResult('ordersReadResult', result.tests.orders);
+            } catch (error) {
+                showResult('ordersReadResult', { error: error.message }, true);
+            }
+        }
+
+        async function testOrdersCreate() {
+            showLoading('ordersCreateResult');
+            try {
+                const data = {
+                    operation: 'create',
+                    type: 'orders',
+                    data: {
+                        customer: {
+                            firstName: document.getElementById('customerName').value,
+                            lastName: 'Test',
+                            email: document.getElementById('customerEmail').value,
+                            phone: '1234567890',
+                            country: 'Egypt',
+                            city: 'Cairo',
+                            address: 'Test Address'
+                        },
+                        items: [{
+                            productId: 'test-product',
+                            productName: 'Test Product',
+                            price: 100,
+                            quantity: 1,
+                            total: 100
+                        }],
+                        subtotal: 100,
+                        shipping: 50,
+                        total: 150
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('ordersCreateResult', result);
+            } catch (error) {
+                showResult('ordersCreateResult', { error: error.message }, true);
+            }
+        }
+
+        async function testOrdersUpdate() {
+            showLoading('ordersModifyResult');
+            try {
+                const data = {
+                    operation: 'update',
+                    type: 'orders',
+                    data: {
+                        orderNumber: document.getElementById('orderNumber').value,
+                        status: 'confirmed'
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('ordersModifyResult', result);
+            } catch (error) {
+                showResult('ordersModifyResult', { error: error.message }, true);
+            }
+        }
+
+        async function testOrdersDelete() {
+            showLoading('ordersModifyResult');
+            try {
+                const data = {
+                    operation: 'delete',
+                    type: 'orders',
+                    data: {
+                        orderNumber: document.getElementById('orderNumber').value
+                    }
+                };
+                const result = await makeRequest('/api/test-all-sheets-operations', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showResult('ordersModifyResult', result);
+            } catch (error) {
+                showResult('ordersModifyResult', { error: error.message }, true);
+            }
+        }
+
+        // Check if user is logged in on page load
+        window.onload = function() {
+            const token = getAdminToken();
+            if (!token) {
+                alert('Please login to the admin panel first at /admin-login');
+            }
+        };
+    </script>
+</body>
+</html>
