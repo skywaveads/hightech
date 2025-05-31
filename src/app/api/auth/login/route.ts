@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     
     // بيانات الإدمن
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123!@#';
     const adminEmail = 'admin@hightech.com';
     
     // التحقق من صحة بيانات الإدمن
