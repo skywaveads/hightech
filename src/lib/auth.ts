@@ -6,48 +6,98 @@ export interface AdminUser {
   role: string;
 }
 
+// المفتاح السري لـ JWT - يجب أن يتطابق مع المستخدم في واجهة برمجة تطبيقات تسجيل الدخول
+const JWT_SECRET = process.env.JWT_SECRET || 'g#Pz7@rM!aW^84qL*v2ZxT$kNdYh1sB9';
+
+// دالة لفك ترميز Base64 URL
+function base64UrlDecode(str: string): string {
+  let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  try {
+    return atob(base64);
+  } catch (e) {
+    console.error("Failed to decode base64 string:", base64, e);
+    throw new Error("Invalid base64 string for decoding");
+  }
+}
+
+// دالة لترميز Base64 URL (مطابقة لتلك الموجودة في login route)
+function base64UrlEncode(str: string): string {
+  return btoa(str)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+// دالة لإعادة إنشاء التوقيع للتحقق (مطابقة لتلك الموجودة في login route)
+function recreateSignature(encodedHeader: string, encodedPayload: string, secret: string): string {
+  return base64UrlEncode(`${encodedHeader}.${encodedPayload}.${secret}`);
+}
+
+
 /**
- * Verify admin authentication from request using simple session
+ * Verify admin authentication from request using custom JWT-like token
  */
 export async function verifyAdmin(request: NextRequest): Promise<AdminUser | null> {
   try {
-    // Get session token from cookies
-    const sessionToken = request.cookies.get('admin-session')?.value;
-    
-    if (!sessionToken) {
-      console.log('[Auth] No admin session found in cookies');
+    const token = request.cookies.get('token')?.value;
+
+    if (!token) {
+      console.log('[Auth] No token found in cookies');
       return null;
     }
 
-    // Simple session validation - check if token starts with our prefix
-    if (!sessionToken.startsWith('admin-session-')) {
-      console.log('[Auth] Invalid session token format');
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      console.log('[Auth] Invalid token format (not 3 parts)');
       return null;
     }
 
-    // Extract timestamp from token
-    const timestamp = sessionToken.replace('admin-session-', '');
-    const tokenTime = parseInt(timestamp);
-    
-    // Check if token is not too old (24 hours = 86400000 ms)
-    const now = Date.now();
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    
-    if (now - tokenTime > maxAge) {
-      console.log('[Auth] Session token expired');
+    const encodedHeader = parts[0];
+    const encodedPayload = parts[1];
+    const signatureFromToken = parts[2];
+
+    // التأكد من أن الأجزاء ليست فارغة قبل استخدامها
+    if (!encodedHeader || !encodedPayload || !signatureFromToken) {
+      console.log('[Auth] Invalid token structure (empty parts)');
       return null;
     }
 
-    console.log('[Auth] ✅ Session validated successfully');
+    const expectedSignature = recreateSignature(encodedHeader, encodedPayload, JWT_SECRET);
+
+    if (signatureFromToken !== expectedSignature) {
+      console.log('[Auth] Invalid signature.');
+      return null;
+    }
     
-    // Return admin user data
+    const payloadString = base64UrlDecode(encodedPayload);
+    const payload = JSON.parse(payloadString) as AdminUser & { exp: number, iat?:number, fingerprint?: string };
+
+    // التحقق من تاريخ انتهاء الصلاحية
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp < now) {
+      console.log('[Auth] Token expired');
+      return null;
+    }
+    
+    // (اختياري) التحقق من بصمة المتصفح إذا كانت موجودة
+    const requestFingerprint = request.headers.get('X-Browser-Fingerprint');
+    if (payload.fingerprint && requestFingerprint && payload.fingerprint !== requestFingerprint) {
+        console.warn('[Auth] Browser fingerprint mismatch.');
+        // يمكنك اختيار إرجاع null هنا لرفض الجلسة
+    }
+
+    console.log('[Auth] ✅ Token validated successfully for:', payload.email);
     return {
-      id: 'admin-001',
-      email: 'admin@hightech.com',
-      role: 'admin'
+      id: payload.id,
+      email: payload.email,
+      role: payload.role,
     };
+
   } catch (error) {
-    console.error('[Auth] Session verification failed:', error);
+    console.error('[Auth] Token verification failed:', error);
     return null;
   }
 }

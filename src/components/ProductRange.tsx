@@ -20,16 +20,29 @@ const ProductRange: React.FC = () => {
           throw new Error('Failed to fetch products');
         }
         const data = await response.json();
+        console.log('[ProductRange] API response data:', data); // Log 1: API Data
         
-        // Handle new API response structure
-        if (data && data.success && data.products && Array.isArray(data.products)) {
-          setProducts(data.products.slice(0, 6)); // Ensure we only take 6 products
-        } else if (data && Array.isArray(data)) {
-          // Fallback for old API response format
-          setProducts(data.slice(0, 6));
+        // Handle API response structure with extra safety
+        let productsArrayForState: Product[] = []; // Default to an empty array
+
+        if (data && data.products && Array.isArray(data.products)) {
+          console.log('[ProductRange] API data.products is an array. Count:', data.products.length); // Log 2a
+          productsArrayForState = data.products;
+        } else if (data && Array.isArray(data)) { // Fallback for old direct array format
+          console.log('[ProductRange] API data is a direct array. Count:', data.length); // Log 2b
+          productsArrayForState = data;
         } else {
-          console.warn('No products found in API response');
-          setProducts([]);
+          console.warn('[ProductRange] No valid products array in API response. API Data:', data); // Log 2c
+        }
+
+        // Ensure we always set an array to the state, and then slice
+        if (Array.isArray(productsArrayForState)) {
+          console.log('[ProductRange] Setting products state with (sliced):', productsArrayForState.slice(0, 6)); // Log 2d
+          setProducts(productsArrayForState.slice(0, 6));
+        } else {
+          // This case should ideally not be reached if logic above is correct
+          console.error('[ProductRange] productsArrayForState was NOT an array before setProducts. This is a critical issue. Value:', productsArrayForState);
+          setProducts([]); // Ultimate fallback
         }
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -41,6 +54,8 @@ const ProductRange: React.FC = () => {
 
     fetchProducts();
   }, []);
+
+  console.log('[ProductRange] Rendering. Current products state:', products, 'Is Array:', Array.isArray(products)); // Log 3: State before render
 
   return (
     <Section id="products">

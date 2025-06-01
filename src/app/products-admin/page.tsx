@@ -1067,22 +1067,67 @@ export default function ProductsAdminPage() {
                 
                 {/* أرقام الصفحات */}
                 <div className="flex gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(currentPage - 2 + i, totalPages - 4 + i));
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
-                          currentPage === pageNum
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                  {(() => {
+                    const pages: React.ReactNode[] = [];
+                    const maxVisibleButtons = 3; // Number of page buttons to show around current page, besides first/last and ellipsis
+                    const sideButtons = 1; // Number of buttons to show from start/end if not clashing with middle window
+
+                    if (totalPages <= 1) return null; // No pagination if 1 page or less
+
+                    // Helper to add a page button
+                    const addPageButton = (pageNumber: number) => {
+                      pages.push(
+                        <button
+                          key={`page-${pageNumber}`}
+                          onClick={() => setCurrentPage(pageNumber)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                            currentPage === pageNumber
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    };
+
+                    // Helper to add ellipsis
+                    const addEllipsis = (key: string) => {
+                      pages.push(<span key={key} className="px-3 py-2 text-sm font-medium text-gray-700">...</span>);
+                    };
+
+                    // Always add first page
+                    addPageButton(1);
+
+                    let rangeStart = Math.max(2, currentPage - Math.floor(maxVisibleButtons / 2));
+                    let rangeEnd = Math.min(totalPages - 1, currentPage + Math.floor(maxVisibleButtons / 2));
+                    
+                    if (totalPages > (sideButtons * 2) + maxVisibleButtons + 2) { // Check if ellipsis are needed
+                        if (rangeStart > 2) {
+                            addEllipsis('start-ellipsis');
+                        }
+                    } else { // Not enough pages for full ellipsis logic, show all pages between 1 and totalPages
+                        rangeStart = 2;
+                        rangeEnd = totalPages - 1;
+                    }
+                    
+                    for (let i = rangeStart; i <= rangeEnd; i++) {
+                        addPageButton(i);
+                    }
+
+                    if (totalPages > (sideButtons * 2) + maxVisibleButtons + 2) {
+                        if (rangeEnd < totalPages - 1) {
+                            addEllipsis('end-ellipsis');
+                        }
+                    }
+                    
+                    // Always add last page if totalPages > 1
+                    if (totalPages > 1) {
+                      addPageButton(totalPages);
+                    }
+
+                    return pages;
+                  })()}
                 </div>
 
                 <button

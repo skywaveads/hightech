@@ -60,24 +60,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[ProductsAPI] Starting products fetch...');
     
-    // Check if this is an admin request (has authentication headers)
-    const isAdminRequest = request.headers.get('X-Requested-With') === 'XMLHttpRequest';
-    
-    if (isAdminRequest) {
-      // Verify authentication for admin requests
-      const adminUser: AdminUser | null = await verifyAdmin(request);
-      if (!adminUser) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Authentication required for admin access',
-            code: 'UNAUTHORIZED'
-          },
-          { status: 401 }
-        );
-      }
-      console.log('[ProductsAPI] Admin authenticated:', adminUser.email);
-    }
+    // Admin authentication is not required for GETting public product listings.
+    // If admin-specific data is needed, it should be on a separate endpoint or gated differently.
     
     // Try Google Sheets first
     try {

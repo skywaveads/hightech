@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { Product } from '@/types/product';
+import { cartStorage } from '@/lib/cart-storage';
 
 // أنواع البيانات
 export interface CartItem {
@@ -37,6 +38,7 @@ interface CartContextType extends CartState {
   openCart: () => void;
   closeCart: () => void;
   getTotalPrice: () => number;
+  getStorageInfo: () => any;
 }
 
 // الحالة الأولية
@@ -183,58 +185,35 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // تحميل السلة من Cookies عند بدء التطبيق
+  // تحميل السلة من التخزين عند بدء التطبيق
   useEffect(() => {
-    const loadCartFromCookies = () => {
+    const loadCartFromStorage = () => {
       try {
-        const savedCart = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('cart='))
-          ?.split('=')[1];
+        const cartData = cartStorage.load();
         
-        if (savedCart) {
-          const cartData = JSON.parse(decodeURIComponent(savedCart));
-          // التحقق من صحة البيانات
-          if (Array.isArray(cartData) && cartData.length > 0) {
-            // تحويل التواريخ من string إلى Date
-            const itemsWithDates = cartData.map(item => ({
-              ...item,
-              addedAt: new Date(item.addedAt)
-            }));
-            dispatch({ type: 'LOAD_CART', payload: itemsWithDates });
-          }
+        if (cartData && Array.isArray(cartData) && cartData.length > 0) {
+          // تحويل التواريخ من string إلى Date
+          const itemsWithDates = cartData.map(item => ({
+            ...item,
+            addedAt: new Date(item.addedAt)
+          }));
+          dispatch({ type: 'LOAD_CART', payload: itemsWithDates });
         }
       } catch (error) {
-        console.error('خطأ في تحميل السلة من Cookies:', error);
-        // مسح البيانات التالفة
-        document.cookie = 'cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        console.error('خطأ في تحميل السلة من التخزين:', error);
+        cartStorage.clear();
       }
     };
 
-    loadCartFromCookies();
+    loadCartFromStorage();
   }, []);
 
-  // حفظ السلة في Cookies عند تغيير الحالة
+  // حفظ السلة في التخزين عند تغيير الحالة
   useEffect(() => {
-    const saveCartToCookies = () => {
-      try {
-        const cartData = JSON.stringify(state.items);
-        // حفظ لمدة سنة كاملة (365 يوم)
-        const expiryDate = new Date();
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-        
-        document.cookie = `cart=${encodeURIComponent(cartData)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
-      } catch (error) {
-        console.error('خطأ في حفظ السلة في Cookies:', error);
-      }
-    };
-
-    // حفظ فقط إذا كانت هناك عناصر في السلة
     if (state.items.length > 0) {
-      saveCartToCookies();
+      cartStorage.save(state.items);
     } else {
-      // مسح الـ cookie إذا كانت السلة فارغة
-      document.cookie = 'cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      cartStorage.clear();
     }
   }, [state.items]);
 
@@ -271,6 +250,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return state.totalPrice;
   };
 
+  const getStorageInfo = () => {
+    return cartStorage.getStorageInfo();
+  };
+
   const value: CartContextType = {
     ...state,
     addItem,
@@ -281,6 +264,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     openCart,
     closeCart,
     getTotalPrice,
+    getStorageInfo,
   };
 
   return (
@@ -309,4 +293,10 @@ export function useCartCount() {
 export function useCartTotal() {
   const { totalPrice } = useCart();
   return totalPrice;
+}
+
+// Hook للحصول على معلومات التخزين (للتطوير والتشخيص)
+export function useCartStorageInfo() {
+  const { getStorageInfo } = useCart();
+  return getStorageInfo();
 }

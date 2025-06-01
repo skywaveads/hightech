@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       maxAge: 0, // حذف فوري
     };
     
-    cookies().set('admin-session', '', cookieOptions);
+    cookies().set('token', '', cookieOptions); // Changed 'admin-session' to 'token'
     
     console.log('✅ تم تسجيل الخروج بنجاح');
     
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       maxAge: 0,
     };
     
-    cookies().set('admin-session', '', cookieOptions);
+    cookies().set('token', '', cookieOptions); // Changed 'admin-session' to 'token'
     
     return NextResponse.json(
       { 

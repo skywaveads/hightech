@@ -118,17 +118,8 @@ function AdminLoginContent() {
 
   // فحص أمني أولي
   useEffect(() => {
-    const performSecurityCheck = async () => {
-      try {
-        // محاكاة فحص أمني
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setIsSecurityCheckPassed(true);
-      } catch (error) {
-        setError('فشل في الفحص الأمني');
-      }
-    };
-
-    performSecurityCheck();
+    // إزالة التأخير المصطنع وتمرير الفحص الأمني مباشرة
+    setIsSecurityCheckPassed(true);
   }, []);
 
   // معالجة تقديم النموذج
