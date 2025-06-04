@@ -380,6 +380,7 @@ export default function ProductsAdminPage() {
       setProducts(prev => [...prev, newProduct]);
       setIsAddModalOpen(false);
       showToast('تمت إضافة المنتج بنجاح', 'success');
+      await fetchProducts(); // Re-fetch products
     } catch (error) {
       console.error('Error adding product:', error);
       showToast('فشل في إضافة المنتج', 'error');
@@ -427,6 +428,7 @@ export default function ProductsAdminPage() {
       setIsEditModalOpen(false);
       setEditingProduct(null);
       showToast('تم تحديث المنتج بنجاح', 'success');
+      await fetchProducts(); // Re-fetch products
     } catch (error) {
       console.error('Error updating product:', error);
       showToast('فشل في تحديث المنتج', 'error');
@@ -459,6 +461,7 @@ export default function ProductsAdminPage() {
       setProducts(prev => prev.filter(p => p._id !== id));
       setSelectedProducts(prev => prev.filter(prodId => prodId !== id));
       showToast('تم حذف المنتج بنجاح', 'success');
+      await fetchProducts(); // Re-fetch products
     } catch (error) {
       console.error('Error deleting product:', error);
       showToast('فشل في حذف المنتج', 'error');
@@ -495,6 +498,7 @@ export default function ProductsAdminPage() {
       setSelectedProducts([]);
       setIsDeleteModalOpen(false);
       showToast(`تم حذف ${result.deletedCount} منتجات بنجاح`, 'success');
+      await fetchProducts(); // Re-fetch products
     } catch (error) {
       console.error('Error in bulk delete:', error);
       showToast('فشل في حذف المنتجات', 'error');
