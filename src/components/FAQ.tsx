@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Section from '@/components/ui/Section';
+import { companyInfo } from '@/data/company';
 import {
   Accordion,
   AccordionContent,
@@ -42,8 +43,8 @@ const FAQ: React.FC = () => {
           لم تجد إجابة على سؤالك؟
         </p>
         <div className="inline-flex gap-4">
-          <a 
-            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP || '+201001234567'}`} 
+          <a
+            href={`https://wa.me/${companyInfo.primaryPhone.replace('+', '')}`}
             className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800"
             target="_blank"
             rel="noopener noreferrer"

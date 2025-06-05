@@ -584,7 +584,7 @@ export default function PrivacyPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a
-                  href="tel:+201234567890"
+                  href="tel:+201050703016"
                   className="bg-white/20 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-white/30 transition-all duration-300 transform hover:scale-105"
                 >
                   <Phone className="h-8 w-8 mx-auto mb-4 text-green-400" />
@@ -602,7 +602,7 @@ export default function PrivacyPage() {
                 </a>
                 
                 <a
-                  href="https://wa.me/201234567890"
+                  href="https://wa.me/201050703016"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white/20 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-white/30 transition-all duration-300 transform hover:scale-105"

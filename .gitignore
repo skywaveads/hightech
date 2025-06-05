@@ -49,3 +49,6 @@ data/comments.json
 
 # Editor directories and files
 .vscode
+
+# Local Netlify folder
+.netlify

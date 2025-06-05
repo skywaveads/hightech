@@ -538,7 +538,7 @@ export default function ContactPage() {
                       اتصل الآن
                     </a>
                     <a
-                      href={`https://wa.me/${branch.phone.replace('+', '')}`}
+                      href={`https://wa.me/${companyInfo.primaryPhone.replace('+', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg text-center transition-colors duration-200"

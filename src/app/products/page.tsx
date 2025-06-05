@@ -334,7 +334,7 @@ function ProductsContent() {
 
   const handleWhatsApp = (product: Product) => {
     const message = `مرحباً، أريد الاستفسار عن ${product.name_ar} - ${product.sku}`;
-    const whatsappUrl = `https://wa.me/201234567890?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/201050703016?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -831,7 +831,7 @@ function ProductsContent() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="https://wa.me/201234567890"
+              href="https://wa.me/201050703016"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-colors flex items-center gap-2"
@@ -840,7 +840,7 @@ function ProductsContent() {
               تواصل عبر الواتساب
             </a>
             <a
-              href="tel:+201234567890"
+              href="tel:+201050703016"
               className="bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/30 transition-colors flex items-center gap-2"
             >
               <Phone className="h-6 w-6" />

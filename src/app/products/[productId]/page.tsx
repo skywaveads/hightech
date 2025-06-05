@@ -467,7 +467,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                   <button
                     onClick={() => {
                       const message = `مرحباً، أريد الاستفسار عن ${product.name_ar} - ${product.sku}`;
-                      const whatsappUrl = `https://wa.me/201234567890?text=${encodeURIComponent(message)}`;
+                      const whatsappUrl = `https://wa.me/201050703016?text=${encodeURIComponent(message)}`;
                       window.open(whatsappUrl, '_blank');
                     }}
                     className="py-4 px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -574,7 +574,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Phone Support */}
                   <button
-                    onClick={() => window.open('tel:+201234567890', '_self')}
+                    onClick={() => window.open('tel:+201050703016', '_self')}
                     className="group p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 hover:border-blue-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
                     <div className="flex items-center gap-3">
@@ -593,7 +593,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                   <button
                     onClick={() => {
                       const message = `مرحباً، أحتاج مساعدة بخصوص ${product.name_ar}`;
-                      window.open(`https://wa.me/201234567890?text=${encodeURIComponent(message)}`, '_blank');
+                      window.open(`https://wa.me/201050703016?text=${encodeURIComponent(message)}`, '_blank');
                     }}
                     className="group p-4 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 hover:border-green-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
