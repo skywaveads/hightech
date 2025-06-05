@@ -68,6 +68,8 @@ import {
   Battery,
   Bluetooth
 } from 'lucide-react';
+import FacebookTracker from '@/components/tracking/FacebookTracker';
+import WhatsAppTracker from '@/components/tracking/WhatsAppTracker';
 import { Product } from '@/types/product';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CounterAnimation from '@/components/ui/CounterAnimation';
@@ -883,12 +885,19 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    }>
-      <ProductsContent />
-    </Suspense>
+    <>
+      <FacebookTracker
+        contentName="Products Page"
+        contentCategory="products"
+        contentId="products-main"
+      />
+      <Suspense fallback={
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      }>
+        <ProductsContent />
+      </Suspense>
+    </>
   );
 }

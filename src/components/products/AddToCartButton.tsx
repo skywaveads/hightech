@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { Product } from '@/types/product';
+import { trackAddToCart } from '@/lib/facebook-conversions';
 
 interface AddToCartButtonProps {
   product: Product;
@@ -30,6 +31,15 @@ export default function AddToCartButton({ product, className = '' }: AddToCartBu
     try {
       // إضافة المنتج إلى السلة
       addItem(product, quantity);
+      
+      // تتبع حدث إضافة إلى السلة في Facebook
+      await trackAddToCart({
+        contentName: product.name_ar,
+        contentId: product._id,
+        value: (product.sale_price || product.price) * quantity,
+        currency: 'EGP',
+        quantity: quantity,
+      });
       
       // إظهار رسالة نجاح
       setJustAdded(true);

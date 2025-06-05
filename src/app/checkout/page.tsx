@@ -6,13 +6,15 @@ import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
 import { arabCountries, Country } from '@/data/countries';
 import { OrderFormData } from '@/types/order';
-import { 
-  ShoppingCart, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Globe, 
+import { trackCheckoutInitiation, trackOrderCompletion } from '@/lib/order-tracking';
+import FacebookTracker from '@/components/tracking/FacebookTracker';
+import {
+  ShoppingCart,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
   CreditCard,
   Truck,
   CheckCircle,
@@ -43,10 +45,13 @@ export default function CheckoutPage() {
     notes: '',
   });
 
-  // التحقق من وجود منتجات في السلة
+  // التحقق من وجود منتجات في السلة وتتبع بدء الشراء
   useEffect(() => {
     if (items.length === 0 && !showSuccess) {
       router.push('/products');
+    } else if (items.length > 0) {
+      // تتبع بدء عملية الشراء
+      trackCheckoutInitiation(items);
     }
   }, [items, router, showSuccess]);
 
@@ -158,6 +163,16 @@ export default function CheckoutPage() {
       const result = await response.json();
 
       if (result.success) {
+        // تتبع إتمام الشراء
+        await trackOrderCompletion({
+          orderId: result.orderNumber,
+          items: items,
+          total: getTotalPrice(),
+          currency: 'EGP',
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+        });
+
         setOrderNumber(result.orderNumber);
         setShowSuccess(true);
         clearCart();
@@ -212,7 +227,15 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <FacebookTracker
+        contentName="Checkout Page"
+        contentCategory="checkout"
+        contentId="checkout-main"
+        value={getTotalPrice()}
+        currency="EGP"
+      />
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -531,6 +554,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

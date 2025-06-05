@@ -2,10 +2,22 @@
 
 import React from 'react';
 import { companyInfo } from '@/data/company';
+import { trackContact } from '@/lib/facebook-conversions';
 
 const FloatingWhatsApp = () => {
   // استخدام الرقم الأساسي وإزالة + للرابط
   const phoneNumber = companyInfo.primaryPhone.replace('+', '');
+  
+  const handleWhatsAppClick = async () => {
+    try {
+      await trackContact({
+        method: 'whatsapp',
+        contentName: 'Floating WhatsApp Button',
+      });
+    } catch (error) {
+      console.error('Error tracking WhatsApp contact:', error);
+    }
+  };
   
   return (
     <div className="fixed bottom-6 right-6 z-50 group">
@@ -18,6 +30,7 @@ const FloatingWhatsApp = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="تواصل معنا عبر الواتساب"
+        onClick={handleWhatsAppClick}
         className="relative flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-[0_8px_32px_rgba(37,211,102,0.3)] hover:shadow-[0_12px_40px_rgba(37,211,102,0.5)] hover:scale-110 transition-all duration-300 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] overflow-hidden"
       >
         {/* Animated rings */}
